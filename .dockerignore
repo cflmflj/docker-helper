@@ -3,45 +3,33 @@
 .gitignore
 .gitattributes
 
-# Docker相关
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Node.js相关
+web/node_modules
+web/dist
+web/.vite
 
-# 文档
-README.md
-项目需求文档.md
-*.md
-
-# 环境文件
-.env
-.env.local
-.env.example
-
-# 日志文件
-*.log
-
-# 编译产物
-main
+# Go相关
 *.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
 
-# 数据目录
+# 数据和日志文件
 data/
+logs/
+*.log
+*.db
+*.sqlite
 
-# Node.js
-web/node_modules/
-web/npm-debug.log*
-web/yarn-debug.log*
-web/yarn-error.log*
-
-# React build (会在Docker中重新构建)
-web/build/
-
-# IDE文件
+# IDE和编辑器
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # 操作系统
 .DS_Store
@@ -49,4 +37,21 @@ Thumbs.db
 
 # 临时文件
 *.tmp
-*.temp 
+*.temp
+
+# Docker相关
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# CI/CD相关
+.github/
+
+# 文档
+README.md
+*.md
+docs/
+
+# 其他
+*.backup
+*.old 
