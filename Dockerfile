@@ -11,8 +11,11 @@ COPY web/package*.json ./
 # 安装前端依赖（包括开发依赖，用于构建）
 RUN npm ci
 
-# 复制前端源码
-COPY web/ .
+# 复制前端源码（使用更明确的方式）
+COPY web/src/ ./src/
+COPY web/index.html ./index.html
+COPY web/vite.config.js ./vite.config.js
+COPY web/eslint.config.js ./eslint.config.js
 
 # 构建前端
 RUN npm run build

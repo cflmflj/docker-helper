@@ -2,7 +2,6 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/docker-favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- 页面标题和描述 -->
@@ -11,36 +10,8 @@
     <meta name="keywords" content="Docker,镜像代理,Harbor,镜像同步,Docker Registry,容器镜像,跨境同步" />
     <meta name="author" content="Docker镜像代理服务" />
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    
-    <!-- 各种尺寸的图标 -->
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/docker-favicon.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="192x192" href="/icon-192.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="512x512" href="/icon-512.svg" />
-    
-    <!-- Apple Touch Icon (iOS设备) -->
-    <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.svg" />
-    
-    <!-- Open Graph / 社交媒体分享 -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Docker镜像代理服务" />
-    <meta property="og:description" content="专业的Docker镜像跨境同步平台，解决镜像拉取困难问题" />
-    <meta property="og:site_name" content="Docker镜像代理服务" />
-    <meta property="og:image" content="/icon-512.svg" />
-    <meta property="og:image:alt" content="Docker镜像代理服务图标" />
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Docker镜像代理服务" />
-    <meta name="twitter:description" content="专业的Docker镜像跨境同步平台" />
-    <meta name="twitter:image" content="/icon-512.svg" />
-    
     <!-- 主题色彩 -->
     <meta name="theme-color" content="#1890ff" />
-    <meta name="msapplication-TileColor" content="#1890ff" />
-    <meta name="msapplication-TileImage" content="/icon-192.svg" />
     
     <!-- PWA和移动端支持 -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -49,38 +20,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Docker代理" />
     
-    <!-- Windows磁贴 -->
-    <meta name="msapplication-square70x70logo" content="/docker-favicon.svg" />
-    <meta name="msapplication-square150x150logo" content="/icon-192.svg" />
-    <meta name="msapplication-wide310x150logo" content="/icon-512.svg" />
-    <meta name="msapplication-square310x310logo" content="/icon-512.svg" />
-    
     <!-- SEO优化 -->
     <meta name="robots" content="index, follow" />
     <meta name="googlebot" content="index, follow" />
-    <link rel="canonical" href="/" />
-    
-    <!-- 预加载关键资源 -->
-    <link rel="preconnect" href="/api" />
-    <link rel="dns-prefetch" href="/api" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    
-    <!-- PWA服务注册脚本 -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
   </body>
 </html>

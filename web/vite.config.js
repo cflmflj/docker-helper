@@ -18,21 +18,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'static',
     sourcemap: false,
-    minify: 'esbuild',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          antd: ['antd', '@ant-design/icons'],
-          router: ['react-router-dom'],
-        }
-      }
-    },
-    esbuild: {
-      drop: ['console', 'debugger'],
-    },
+    minify: 'esbuild'
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
