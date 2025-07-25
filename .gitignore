@@ -1,0 +1,304 @@
+# =============================================================================
+# Docker镜像代理服务 - .gitignore
+# =============================================================================
+
+# =============================================================================
+# Go 相关
+# =============================================================================
+# 编译后的可执行文件
+main
+main.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go 测试文件
+*.test
+
+# Go 覆盖率文件
+*.out
+coverage.txt
+*.coverprofile
+
+# Go 工作区文件
+go.work
+go.work.sum
+
+# 依赖分析
+vendor/
+
+# Go 模块代理缓存
+# 通常不需要忽略，但如果需要可以取消注释
+# go.sum
+
+# =============================================================================
+# 前端项目 (Node.js / Vite)
+# =============================================================================
+# 依赖
+node_modules/
+web/node_modules/
+
+# 构建输出
+dist/
+web/dist/
+web/build/
+dist-ssr/
+*.local
+
+# 日志文件
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率目录
+coverage/
+nyc_output/
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# =============================================================================
+# 数据库和数据文件
+# =============================================================================
+# SQLite 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+data/
+data/*
+!data/.gitkeep
+
+# 数据库备份
+*.sql.backup
+*.db.backup
+
+# =============================================================================
+# 环境配置和密钥
+# =============================================================================
+# 环境变量文件
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+
+# 配置文件
+config.local.json
+config.production.json
+config.development.json
+
+# 密钥和证书
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# =============================================================================
+# 编辑器和IDE
+# =============================================================================
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# 操作系统生成的文件
+# =============================================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# 日志和临时文件
+# =============================================================================
+# 应用日志
+logs/
+*.log
+log/
+
+# 临时文件
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# =============================================================================
+# 构建和部署相关
+# =============================================================================
+# Docker
+.docker/
+
+# 部署脚本生成的文件
+deploy/
+.deploy/
+
+# CI/CD
+.travis.yml.backup
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# =============================================================================
+# 开发工具
+# =============================================================================
+# Air (Go热重载工具)
+tmp/
+.air.toml
+
+# Swagger/OpenAPI
+swagger-ui/
+api-docs/
+
+# 性能分析
+*.prof
+cpu.prof
+mem.prof
+trace.out
+
+# Delve debugger
+__debug_bin
+
+# =============================================================================
+# 项目特定
+# =============================================================================
+# 如果有本地开发用的脚本或配置
+local/
+.local/
+
+# 如果有测试数据
+testdata/fixtures/
+test-data/
+
+# 如果有生成的文档
+docs/generated/ 

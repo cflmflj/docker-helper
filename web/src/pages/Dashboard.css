@@ -1,0 +1,317 @@
+/* ===== Layout基础样式 ===== */
+.dashboard-layout {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* ===== Header样式 ===== */
+.dashboard-header {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0;
+  height: 64px; /* Ant Design标准Header高度 */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+.logo-text {
+  margin: 0 !important;
+  color: #262626;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-action-btn {
+  color: #595959;
+  border: none;
+  box-shadow: none;
+}
+
+.header-action-btn:hover {
+  color: #1890ff;
+  background-color: #f0f9ff;
+}
+
+.user-info {
+  color: #262626;
+  border: none;
+  box-shadow: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.user-info:hover {
+  background-color: #f0f9ff;
+}
+
+.username {
+  font-weight: 500;
+  color: #262626;
+}
+
+/* ===== Content样式 ===== */
+.dashboard-content {
+  padding: 0;
+  background: #f5f5f5;
+  min-height: calc(100vh - 64px - 70px); /* 减去Header和Footer高度 */
+}
+
+.content-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ===== 页面标题区域 ===== */
+.page-header {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 
+              0 1px 6px -1px rgba(0, 0, 0, 0.02), 
+              0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.page-header-content {
+  padding: 24px;
+}
+
+.page-icon {
+  font-size: 28px;
+  color: #1890ff;
+}
+
+.page-title {
+  margin: 0 !important;
+  color: #262626;
+  font-weight: 600;
+}
+
+/* ===== 功能卡片样式 ===== */
+.function-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 
+              0 1px 6px -1px rgba(0, 0, 0, 0.02), 
+              0 2px 4px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.function-card:hover {
+  box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.function-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+}
+
+.function-card .ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  padding: 16px 0;
+}
+
+.function-card .ant-card-body {
+  padding: 24px;
+}
+
+/* 特定卡片样式 */
+.proxy-card .ant-card-head {
+  background: linear-gradient(90deg, #f0f9ff 0%, #fff 100%);
+}
+
+.status-card .ant-card-head {
+  background: linear-gradient(90deg, #f6ffed 0%, #fff 100%);
+}
+
+.history-card .ant-card-head {
+  background: linear-gradient(90deg, #fff7e6 0%, #fff 100%);
+}
+
+/* ===== Footer样式 ===== */
+.dashboard-footer {
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== 加载容器 ===== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 1200px) {
+  .content-container {
+    padding: 16px;
+  }
+  
+  .header-content {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 12px;
+  }
+  
+  .logo-text {
+    font-size: 16px !important;
+  }
+  
+  .content-container {
+    padding: 12px;
+  }
+  
+  .page-header-content {
+    padding: 16px;
+  }
+  
+  .page-title {
+    font-size: 20px !important;
+  }
+  
+  .function-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .function-card .ant-card-head-title {
+    font-size: 14px;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-content {
+    min-height: calc(100vh - 64px - 120px);
+  }
+  
+  .header-right .ant-space-item:not(:last-child) {
+    display: none; /* 在小屏幕上隐藏通知图标 */
+  }
+  
+  .logo {
+    gap: 8px;
+  }
+  
+  .logo-icon {
+    font-size: 20px;
+  }
+  
+  .username {
+    display: none; /* 在小屏幕上隐藏用户名 */
+  }
+}
+
+/* ===== 动画效果 ===== */
+.function-card {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 主题色彩增强 ===== */
+.ant-badge-status-processing {
+  color: #1890ff;
+}
+
+.ant-badge-status-success {
+  color: #52c41a;
+}
+
+.ant-badge-status-error {
+  color: #f5222d;
+}
+
+.ant-badge-status-default {
+  color: #d9d9d9;
+}
+
+/* ===== 滚动条优化 ===== */
+.history-card .ant-card-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.history-card .ant-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-card .ant-card-body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.history-card .ant-card-body::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.history-card .ant-card-body::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+} 

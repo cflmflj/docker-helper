@@ -1,0 +1,52 @@
+# Git相关
+.git
+.gitignore
+.gitattributes
+
+# Docker相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 文档
+README.md
+项目需求文档.md
+*.md
+
+# 环境文件
+.env
+.env.local
+.env.example
+
+# 日志文件
+*.log
+
+# 编译产物
+main
+*.exe
+
+# 数据目录
+data/
+
+# Node.js
+web/node_modules/
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# React build (会在Docker中重新构建)
+web/build/
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp 
