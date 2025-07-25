@@ -24,27 +24,93 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+          path: project
+
+      - name: 调试路径结构
+        run: |
+          echo "当前工作目录："
+          pwd
+          echo "根目录内容："
+          ls -la
+          echo "项目目录内容："
+          ls -la project/
+          echo "web目录内容："
+          ls -la project/web/
+
+      - name: 调试路径结构
+        run: |
+          echo "当前工作目录："
+          pwd
+          echo "列出根目录内容："
+          ls -la
+          echo "列出 project 目录内容："
+          ls -la project/
+          echo "检查 project/web 目录："
+          ls -la project/web/
+
+      - name: 修复文件权限
+        working-directory: ./project
+        run: |
+          chmod -R 755 .
+          find . -name "*.html" -type f -exec chmod 644 {} \;
 
       - name: 设置 Node.js 20.9.0
         uses: actions/setup-node@v4
         with:
           node-version: '20.9.0'
           cache: 'npm'
-          cache-dependency-path: 'web/package-lock.json'
+          cache-dependency-path: 'project/web/package-lock.json'
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: 清理前端缓存
+        working-directory: ./project/web
+        run: |
+          rm -rf node_modules/.vite
+          rm -rf dist
+          ls -la
 
       - name: 安装前端依赖
-        working-directory: ./web
+        working-directory: ./project/web
         run: npm ci
 
+      - name: 验证文件结构
+        working-directory: ./project/web
+        run: |
+          echo "验证关键文件是否存在..."
+          ls -la index.html
+          file index.html
+          echo "验证 src 目录..."
+          ls -la src/
+
       - name: 构建前端项目
-        working-directory: ./web
-        run: npm run build
+        working-directory: ./project/web
+        run: |
+          echo "开始构建前端项目..."
+          npm run build
+        env:
+          NODE_ENV: production
+          CI: true
 
       - name: 验证前端构建输出
+        working-directory: ./project
         run: |
           echo "检查前端构建文件..."
           ls -la web/dist/
+          echo "验证构建产物..."
+          file web/dist/index.html
           echo "构建完成，文件列表如上"
+
+      - name: 验证整体项目结构
+        working-directory: ./project
+        run: |
+          echo "验证项目根目录文件..."
+          ls -la
+          echo "验证 main 可执行文件..."
+          ls -la main 2>/dev/null || echo "main 文件尚未构建"
 
       - name: 设置 Go 1.23.11
         uses: actions/setup-go@v5
@@ -57,20 +123,24 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('project/**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
       - name: 下载 Go 依赖
+        working-directory: ./project
         run: go mod download
 
       - name: 验证 Go 模块
+        working-directory: ./project
         run: go mod verify
 
       - name: 运行 Go 测试
+        working-directory: ./project
         run: go test -v ./...
 
       - name: 构建 Go 应用
+        working-directory: ./project
         run: |
           echo "开始构建 Go 应用..."
           CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main .
@@ -100,9 +170,10 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: 构建并推送 Docker 镜像
+        id: build-and-push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./project
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
