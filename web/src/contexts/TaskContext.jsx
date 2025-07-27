@@ -37,28 +37,41 @@ export const TaskProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [pollInterval, setPollInterval] = useState(null);
 
-  // 获取任务列表
+  // 获取任务列表和最近历史
   const fetchTasks = async () => {
     try {
-      const response = await getTasks();
-      if (response.data.success) {
-        const taskList = response.data.data || [];
-        
-        // 分类任务
-        const current = taskList.find(task => task.status === 'running') || null;
-        const queue = taskList.filter(task => task.status === 'queued')
-                             .sort((a, b) => new Date(a.queue_time) - new Date(b.queue_time));
-        const recent = taskList.filter(task => ['success', 'failed'].includes(task.status))
-                              .sort((a, b) => new Date(b.end_time || b.created_at) - new Date(a.end_time || a.created_at))
-                              .slice(0, 10);
-        
-        setTasks(prev => ({
-          ...prev,
-          current,
-          queue,
-          recent
-        }));
+      // 由于后端暂未实现任务队列管理，我们先从历史记录中获取最近的数据
+      const [tasksResponse, historyResponse] = await Promise.all([
+        getTasks(), // 这个暂时返回空数组，用于未来的任务队列功能
+        api.get('/history') // 获取实际的历史记录
+      ]);
+      
+      // 处理任务队列（暂时为空，待后端实现）
+      let current = null;
+      let queue = [];
+      
+      if (tasksResponse.data.success) {
+        const taskList = tasksResponse.data.data || [];
+        current = taskList.find(task => task.status === 'running') || null;
+        queue = taskList.filter(task => task.status === 'queued')
+                        .sort((a, b) => new Date(a.queue_time) - new Date(b.queue_time));
       }
+      
+      // 处理最近历史记录
+      let recent = [];
+      if (historyResponse.data.success) {
+        const historyList = historyResponse.data.data || [];
+        recent = historyList
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                  .slice(0, 5); // 只取最近5条
+      }
+      
+      setTasks(prev => ({
+        ...prev,
+        current,
+        queue,
+        recent
+      }));
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
@@ -114,13 +127,16 @@ export const TaskProvider = ({ children }) => {
     try {
       const response = await apiCreateTask(taskData);
       if (response.data.success) {
-        message.success('任务已添加到队列');
-        await fetchTasks();
-        await fetchTaskStats();
+        message.success('镜像转换成功！');
+        // 延迟一下再刷新，确保后端已经记录了历史
+        setTimeout(async () => {
+          await fetchTasks();
+          await fetchTaskStats();
+        }, 1000);
         return response.data.data;
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || '创建任务失败';
+      const errorMsg = error.response?.data?.message || '镜像转换失败';
       message.error(errorMsg);
       throw error;
     } finally {
@@ -195,12 +211,20 @@ export const TaskProvider = ({ children }) => {
 
   // 监听当前任务变化，控制轮询
   useEffect(() => {
-    if (tasks.current || tasks.queue.length > 0) {
+    // 由于当前没有真正的任务队列，我们简化轮询逻辑
+    // 只在有活动任务时进行轮询，或者定期更新历史记录
+    if (tasks.current) {
       startPolling();
     } else {
-      stopPolling();
+      // 如果没有活动任务，设置较长间隔的轮询来更新历史记录
+      const longInterval = setInterval(async () => {
+        await fetchTasks();
+        await fetchTaskStats();
+      }, 30000); // 30秒更新一次历史记录
+      
+      return () => clearInterval(longInterval);
     }
-  }, [tasks.current, tasks.queue.length]);
+  }, [tasks.current]);
 
   const value = {
     tasks,

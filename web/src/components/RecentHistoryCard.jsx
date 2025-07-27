@@ -61,10 +61,14 @@ const RecentHistoryCard = ({ recent, onViewAll }) => {
     >
       {!recent || recent.length === 0 ? (
         <Empty
-          description="暂无记录"
+          description="暂无转换记录"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           style={{ margin: '20px 0' }}
-        />
+        >
+          <div style={{ fontSize: '12px', color: '#999', marginTop: 8 }}>
+            完成镜像转换后，记录将在这里显示
+          </div>
+        </Empty>
       ) : (
         <List
           size="small"

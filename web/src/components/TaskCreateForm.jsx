@@ -81,7 +81,6 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
       // 重置表单
       form.resetFields();
       setParsedImage('');
-      message.success('任务已添加到队列!');
     } catch (error) {
       const errorMsg = error.response?.data?.message || '创建任务失败';
       message.error(errorMsg);
@@ -178,7 +177,7 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
           block
           style={{ height: '48px', borderRadius: '8px', fontSize: '16px', fontWeight: '500' }}
         >
-          📝 添加到队列
+          🚀 开始转换
         </Button>
       </Form.Item>
     </Form>

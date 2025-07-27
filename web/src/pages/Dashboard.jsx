@@ -184,7 +184,7 @@ const Dashboard = () => {
                   title={
                     <Space>
                       <RocketOutlined style={{ color: '#1890ff' }} />
-                      <span>新建转换任务</span>
+                      <span>镜像转换</span>
                     </Space>
                   }
                   className="function-card create-task-card"

@@ -132,7 +132,7 @@ const TaskStatsCard = ({ stats, onViewDetails }) => {
             平均执行时间
           </div>
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1890ff' }}>
-            {formatAvgDuration(avgDuration)}
+            {total > 0 ? formatAvgDuration(avgDuration) : '--'}
           </div>
         </div>
       </div>

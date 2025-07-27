@@ -60,9 +60,10 @@ export const getTaskStats = () => {
   return api.get('/history/stats');
 };
 
-// 创建任务 - 适配现有的转换接口
+// 创建任务 - 适配现有的转换接口，同时刷新历史记录
 // POST /api/tasks
-export const createTask = (taskData) => {
+export const createTask = async (taskData) => {
+  // 直接调用转换接口，转换完成后会自动记录到历史中
   return api.post('/transform/start', taskData);
 };
 
