@@ -12,7 +12,8 @@ import {
   Divider,
   Avatar,
   Dropdown,
-  Badge
+  Badge,
+  Modal
 } from 'antd';
 import { 
   LogoutOutlined, 
@@ -20,13 +21,16 @@ import {
   UserOutlined, 
   BellOutlined,
   DashboardOutlined,
-  HistoryOutlined,
   RocketOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useTask } from '../contexts/TaskContext';
 import { useNavigate } from 'react-router-dom';
-import TransformForm from '../components/TransformForm';
-import TransformStatus from '../components/TransformStatus';
+import TaskCreateForm from '../components/TaskCreateForm';
+import CurrentTaskCard from '../components/CurrentTaskCard';
+import TaskQueueCard from '../components/TaskQueueCard';
+import TaskStatsCard from '../components/TaskStatsCard';
+import RecentHistoryCard from '../components/RecentHistoryCard';
 import HistoryList from '../components/HistoryList';
 import TokenChangeModal from '../components/TokenChangeModal';
 import './Dashboard.css';
@@ -35,16 +39,12 @@ const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 
 const Dashboard = () => {
-  const [transformStatus, setTransformStatus] = useState({
-    status: 'idle', // idle, running, success, error
-    message: '',
-    progress: ''
-  });
   const [tokenModalVisible, setTokenModalVisible] = useState(false);
-  const [refreshHistory, setRefreshHistory] = useState(0);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   
   const { isAuthenticated, logout, loading } = useAuth();
+  const { tasks, createTask, cancelTask, changePriority } = useTask();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,9 +57,29 @@ const Dashboard = () => {
     logout();
   };
 
-  const handleTransformComplete = () => {
-    // 转换完成后刷新历史记录
-    setRefreshHistory(prev => prev + 1);
+  // 处理任务提交
+  const handleTaskSubmit = async (taskData) => {
+    await createTask(taskData);
+  };
+
+  // 处理任务取消
+  const handleCancelTask = async (taskId) => {
+    await cancelTask(taskId);
+  };
+
+  // 处理优先级调整
+  const handlePriorityChange = async (taskId, direction) => {
+    await changePriority(taskId, direction);
+  };
+
+  // 显示历史记录弹窗
+  const showHistoryModal = () => {
+    setHistoryModalVisible(true);
+  };
+
+  // 关闭历史记录弹窗
+  const closeHistoryModal = () => {
+    setHistoryModalVisible(false);
   };
 
   // 用户菜单
@@ -159,60 +179,51 @@ const Dashboard = () => {
             {/* 左侧主要操作区 */}
             <Col xs={24} lg={16}>
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                {/* 镜像转换卡片 */}
+                {/* 任务创建表单 */}
                 <Card 
                   title={
                     <Space>
                       <RocketOutlined style={{ color: '#1890ff' }} />
-                      <span>镜像转换</span>
+                      <span>新建转换任务</span>
                     </Space>
                   }
-                  className="function-card transform-card"
+                  className="function-card create-task-card"
                   size="small"
                 >
-                  <TransformForm 
-                    onStatusChange={setTransformStatus}
-                    onComplete={handleTransformComplete}
-                  />
+                  <TaskCreateForm onTaskSubmit={handleTaskSubmit} />
                 </Card>
 
-                {/* 执行状态卡片 */}
-                <Card 
-                  title={
-                    <Space>
-                      <Badge 
-                        status={
-                          transformStatus.status === 'running' ? 'processing' :
-                          transformStatus.status === 'success' ? 'success' :
-                          transformStatus.status === 'error' ? 'error' : 'default'
-                        }
-                      />
-                      <span>执行状态</span>
-                    </Space>
-                  }
-                  className="function-card status-card"
-                  size="small"
-                >
-                  <TransformStatus status={transformStatus} />
-                </Card>
+                {/* 当前执行任务 */}
+                {tasks.current && (
+                  <CurrentTaskCard 
+                    task={tasks.current}
+                    onCancel={handleCancelTask}
+                  />
+                )}
+
+                {/* 任务队列 */}
+                {tasks.queue && tasks.queue.length > 0 && (
+                  <TaskQueueCard 
+                    queue={tasks.queue}
+                    onPriorityChange={handlePriorityChange}
+                    onRemove={handleCancelTask}
+                  />
+                )}
               </Space>
             </Col>
 
-            {/* 右侧历史记录区 */}
+            {/* 右侧信息展示区 */}
             <Col xs={24} lg={8}>
-              <Card 
-                title={
-                  <Space>
-                    <HistoryOutlined style={{ color: '#52c41a' }} />
-                    <span>转换历史</span>
-                  </Space>
-                }
-                className="function-card history-card"
-                size="small"
-                style={{ height: 'fit-content' }}
-              >
-                <HistoryList refreshTrigger={refreshHistory} />
-              </Card>
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                {/* 任务统计 */}
+                <TaskStatsCard stats={tasks.stats} />
+                
+                {/* 最近历史 */}
+                <RecentHistoryCard 
+                  recent={tasks.recent}
+                  onViewAll={showHistoryModal}
+                />
+              </Space>
             </Col>
           </Row>
         </div>
@@ -237,6 +248,18 @@ const Dashboard = () => {
         visible={tokenModalVisible}
         onClose={() => setTokenModalVisible(false)}
       />
+
+      {/* 历史记录弹窗 */}
+      <Modal
+        title="转换历史记录"
+        open={historyModalVisible}
+        onCancel={closeHistoryModal}
+        footer={null}
+        width={800}
+        style={{ top: 20 }}
+      >
+        <HistoryList />
+      </Modal>
     </Layout>
   );
 };
