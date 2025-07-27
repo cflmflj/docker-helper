@@ -16,11 +16,16 @@ type LoginRequest struct {
 
 // 镜像转换请求
 type TransformRequest struct {
-	SourceImage    string `json:"source_image" binding:"required"`
-	TargetHost     string `json:"target_host" binding:"required"`
-	TargetUsername string `json:"target_username" binding:"required"`
-	TargetPassword string `json:"target_password" binding:"required"`
-	TargetImage    string `json:"target_image,omitempty"`
+	SourceImage string `json:"source_image" binding:"required"`
+	TargetImage string `json:"target_image,omitempty"`
+
+	// 方式1: 使用已保存的配置
+	ConfigID string `json:"config_id,omitempty"`
+
+	// 方式2: 手动输入仓库信息
+	TargetHost     string `json:"target_host,omitempty"`
+	TargetUsername string `json:"target_username,omitempty"`
+	TargetPassword string `json:"target_password,omitempty"`
 }
 
 // 镜像转换响应

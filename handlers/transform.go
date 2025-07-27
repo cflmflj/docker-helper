@@ -45,14 +45,61 @@ func (h *TransformHandler) StartTransform(c *gin.Context) {
 		return
 	}
 
+	// 解析仓库配置信息
+	var targetHost, targetUsername, targetPassword string
+
+	if req.ConfigID != "" {
+		// 使用已保存的配置
+		config, err := h.getRegistryConfig(req.ConfigID)
+		if err != nil {
+			h.logger.Errorf("获取仓库配置失败: %v", err)
+			c.JSON(http.StatusBadRequest, models.Response{
+				Success: false,
+				Message: "获取仓库配置失败: " + err.Error(),
+			})
+			return
+		}
+
+		targetHost = config.RegistryURL
+		targetUsername = config.Username
+
+		// 解密密码
+		crypto := utils.NewCryptoService()
+		targetPassword, err = crypto.DecryptPassword(config.PasswordEncrypted)
+		if err != nil {
+			h.logger.Errorf("解密密码失败: %v", err)
+			c.JSON(http.StatusInternalServerError, models.Response{
+				Success: false,
+				Message: "解密密码失败",
+			})
+			return
+		}
+	} else {
+		// 使用手动输入的信息
+		if req.TargetHost == "" || req.TargetUsername == "" || req.TargetPassword == "" {
+			c.JSON(http.StatusBadRequest, models.Response{
+				Success: false,
+				Message: "请提供完整的仓库配置信息或选择已保存的配置",
+			})
+			return
+		}
+
+		targetHost = req.TargetHost
+		targetUsername = req.TargetUsername
+		targetPassword = req.TargetPassword
+	}
+
 	// 记录请求开始
 	clientIP := c.ClientIP()
 	h.logger.Infof("======== 收到镜像转换请求 ========")
 	h.logger.Infof("客户端IP: %s", clientIP)
 	h.logger.Infof("源镜像: %s", req.SourceImage)
-	h.logger.Infof("目标仓库: %s", req.TargetHost)
-	h.logger.Infof("目标用户: %s", req.TargetUsername)
+	h.logger.Infof("目标仓库: %s", targetHost)
+	h.logger.Infof("目标用户: %s", targetUsername)
 	h.logger.Infof("目标镜像: %s", req.TargetImage)
+	if req.ConfigID != "" {
+		h.logger.Infof("使用配置ID: %s", req.ConfigID)
+	}
 
 	// 创建带超时的上下文（最长10分钟）
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -64,8 +111,8 @@ func (h *TransformHandler) StartTransform(c *gin.Context) {
 		ctx,
 		req.SourceImage,
 		req.TargetImage, // 使用完整的目标镜像名称
-		req.TargetUsername,
-		req.TargetPassword,
+		targetUsername,
+		targetPassword,
 	)
 
 	// 记录历史
@@ -81,8 +128,8 @@ func (h *TransformHandler) StartTransform(c *gin.Context) {
 	}
 
 	// 从目标镜像名称中提取主机地址
-	targetHost := extractHostFromImage(targetImage)
-	h.recordHistory(req.SourceImage, targetImage, targetHost, status, errorMsg, duration)
+	extractedHost := extractHostFromImage(targetImage)
+	h.recordHistory(req.SourceImage, targetImage, extractedHost, status, errorMsg, duration)
 
 	if err != nil {
 		h.logger.Errorf("======== 镜像转换请求失败 ========")
@@ -150,4 +197,27 @@ func extractHostFromImage(imageName string) string {
 
 	// 如果第一部分不包含点号，默认认为是 docker.io
 	return "docker.io"
+}
+
+// getRegistryConfig 获取仓库配置
+func (h *TransformHandler) getRegistryConfig(configID string) (*models.RegistryConfig, error) {
+	var config models.RegistryConfig
+	query := `
+		SELECT id, name, registry_url, username, password_encrypted, status
+		FROM registry_configs WHERE id = ?
+	`
+
+	err := database.DB.QueryRow(query, configID).Scan(
+		&config.ID,
+		&config.Name,
+		&config.RegistryURL,
+		&config.Username,
+		&config.PasswordEncrypted,
+		&config.Status,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
 }

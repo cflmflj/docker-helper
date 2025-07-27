@@ -17,6 +17,19 @@ CREATE TABLE IF NOT EXISTS transform_history (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 仓库配置表
+CREATE TABLE IF NOT EXISTS registry_configs (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    registry_url TEXT NOT NULL,
+    username TEXT NOT NULL,
+    password_encrypted TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',      -- verified, failed, pending
+    last_test_time DATETIME,
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 插入初始化数据
 INSERT OR REPLACE INTO config (key, value) VALUES 
 ('token', 'docker-transformer'),

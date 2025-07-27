@@ -256,6 +256,9 @@ func main() {
 	defer imageHandler.Close()
 	logger.Info("镜像处理器初始化完成")
 
+	registryHandler := handlers.NewRegistryHandler()
+	logger.Info("仓库配置处理器初始化完成")
+
 	// 注册API路由
 	logger.Info("注册API路由...")
 
@@ -285,6 +288,14 @@ func main() {
 			authenticated.GET("/history", historyHandler.GetHistory)
 			authenticated.GET("/history/stats", historyHandler.GetHistoryStats)
 			authenticated.DELETE("/history", historyHandler.ClearHistory)
+
+			// 仓库配置管理相关
+			authenticated.GET("/registry/configs", registryHandler.GetConfigs)
+			authenticated.POST("/registry/configs", registryHandler.CreateConfig)
+			authenticated.PUT("/registry/configs/:id", registryHandler.UpdateConfig)
+			authenticated.DELETE("/registry/configs/:id", registryHandler.DeleteConfig)
+			authenticated.POST("/registry/test", registryHandler.TestConnection)
+			authenticated.POST("/registry/configs/:id/test", registryHandler.TestConfigConnection)
 		}
 	}
 
