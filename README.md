@@ -69,38 +69,88 @@ docker-transformer/
 
 ## 🚀 快速开始
 
-### 方式1: Docker部署（推荐）
+### 方式1: Docker Compose部署（推荐）
 
 #### 前提条件
 - Docker 20.10+
 - Docker Compose 2.0+
+- 确保Docker服务正在运行
 
-#### 一键启动
+#### 一键部署（推荐）
 ```bash
-# 克隆项目
-git clone <repository-url>
+# 下载并运行一键部署脚本
+curl -fsSL https://raw.githubusercontent.com/cflmflj/docker-transformer/main/deploy.sh | bash
+
+# 或者下载后执行
+wget https://raw.githubusercontent.com/cflmflj/docker-transformer/main/deploy.sh
+chmod +x deploy.sh
+./deploy.sh
+```
+
+#### 手动部署
+```bash
+# 1. 下载docker-compose.yml文件
+wget https://raw.githubusercontent.com/cflmflj/docker-transformer/main/docker-compose.yml
+
+# 2. 启动服务（会自动创建数据卷）
+docker-compose up -d
+
+# 3. 查看服务状态
+docker-compose ps
+
+# 4. 查看日志（可选）
+docker-compose logs -f docker-transformer
+```
+
+#### 自定义部署
+```bash
+# 使用自定义Token部署
+./deploy.sh -t your-custom-token
+
+# 使用自定义端口部署
+./deploy.sh -p 9090
+
+# 组合使用
+./deploy.sh -t my-token -p 9090
+```
+
+#### 完整部署（包含源码）
+```bash
+# 1. 克隆项目
+git clone https://github.com/cflmflj/docker-transformer.git
 cd docker-transformer
 
-# 启动服务
-./scripts/start.sh
+# 2. 启动服务
+docker-compose up -d
 
-# 或者带Nginx反向代理
-./scripts/start.sh --with-nginx
+# 3. 查看服务状态
+docker-compose ps
 ```
 
-#### 手动启动
+### 方式2: Docker直接运行
+
 ```bash
-# 构建并启动
-docker-compose up --build -d
+# 1. 创建数据卷
+docker volume create transformer_data
 
-# 查看日志
-docker-compose logs -f
+# 2. 直接运行容器
+docker run -d \
+  --name docker-transformer \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v transformer_data:/app/data \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -e DEFAULT_TOKEN=your-custom-token \
+  ghcr.io/cflmflj/docker-transformer:latest
 
-# 停止服务
-docker-compose down
+# 3. 查看容器状态
+docker ps
+
+# 4. 查看容器日志
+docker logs -f docker-transformer
 ```
 
-### 方式2: 本地开发
+### 方式3: 本地开发
 
 #### 后端启动
 ```bash
@@ -120,47 +170,147 @@ cd web
 npm install
 
 # 启动开发服务器
-npm start
+npm run dev
+```
+
+## 🔄 容器管理
+
+### 常用Docker Compose命令
+
+```bash
+# 启动服务（后台运行）
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看实时日志
+docker-compose logs -f
+
+# 重启服务
+docker-compose restart
+
+# 停止服务
+docker-compose stop
+
+# 停止并删除容器
+docker-compose down
+
+# 更新镜像并重启
+docker-compose pull && docker-compose up -d
+
+# 查看资源使用情况
+docker-compose top
+```
+
+### 数据备份与恢复
+
+```bash
+# 备份数据（从Docker卷）
+docker run --rm \
+  -v transformer_data:/app/data \
+  -v $(pwd):/backup \
+  alpine tar -czf /backup/backup-$(date +%Y%m%d).tar.gz -C /app/data .
+
+# 恢复数据（到Docker卷）
+docker-compose down
+docker run --rm \
+  -v transformer_data:/app/data \
+  -v $(pwd):/backup \
+  alpine sh -c "cd /app/data && tar -xzf /backup/backup-20231201.tar.gz"
+docker-compose up -d
+
+# 查看数据卷信息
+docker volume inspect transformer_data
+
+# 列出数据卷内容
+docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
 ```
 
 ## 🎯 使用指南
 
-### 1. 登录系统
-- 访问: `http://localhost:8080`
-- 默认Token: `docker-transformer`
+### 1. 访问系统
+- **服务地址**: `http://localhost:8080`
+- **默认Token**: `docker-transformer`
+- **健康检查**: `http://localhost:8080/health`
 
-### 2. 代理镜像
-1. 输入源镜像名称（如: `nginx:latest`）
-2. 点击"解析"按钮验证镜像格式
-3. 配置目标仓库信息
-4. 点击"开始代理"执行镜像转存
+### 2. 登录认证
+1. 在登录页面输入Token（默认：`docker-transformer`）
+2. 点击"登录"进入主界面
+3. 如需修改Token，可在设置中更改
 
-### 3. 查看历史
-- 在历史记录区域查看所有代理操作
-- 支持复制镜像地址和查看详细错误信息
+### 3. 代理镜像
+1. **输入源镜像**: 支持多种格式
+   - `nginx:latest`
+   - `docker.io/library/nginx:latest`
+   - `gcr.io/project/image:tag`
+   - `registry.k8s.io/pause:3.6`
+
+2. **解析镜像**: 点击"解析"按钮验证镜像格式和可用性
+
+3. **配置目标仓库**: 填写目标私有仓库信息
+   - 仓库地址 (如: `harbor.example.com`)
+   - 项目名称 (如: `library`)
+   - 用户名和密码
+
+4. **执行代理**: 点击"开始代理"执行镜像拉取和推送
+
+### 4. 查看历史
+- **操作记录**: 查看所有代理操作的详细信息
+- **状态监控**: 实时查看代理进度和结果
+- **错误诊断**: 查看详细的错误信息和解决建议
+- **快速复制**: 一键复制生成的镜像地址
 
 ## 🔧 配置说明
 
 ### 环境变量
 
-创建 `.env` 文件配置环境变量：
+支持以下环境变量配置：
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `PORT` | `8080` | 服务监听端口 |
+| `GIN_MODE` | `release` | Gin框架模式 (`debug`/`release`) |
+| `LOG_LEVEL` | `info` | 日志级别 (`debug`/`info`/`warn`/`error`) |
+| `DB_PATH` | `/app/data/proxy.db` | SQLite数据库文件路径 |
+| `DEFAULT_TOKEN` | `docker-transformer` | 默认认证Token |
+| `TZ` | `Asia/Shanghai` | 时区设置 |
+
+### Docker Compose配置自定义
+
+创建 `docker-compose.override.yml` 文件进行个性化配置：
+
+```yaml
+version: '3.8'
+
+services:
+  docker-transformer:
+    environment:
+      # 自定义Token
+      - DEFAULT_TOKEN=my-custom-token
+      # 自定义端口
+      - PORT=9090
+    ports:
+      # 映射到自定义端口
+      - "9090:9090"
+    volumes:
+      # 自定义数据目录
+      - /path/to/custom/data:/app/data
+```
+
+### 环境变量配置示例
 
 ```bash
-# 服务器配置
-PORT=8080
-GIN_MODE=release
+# 方式1: 在docker-compose.yml中直接修改
+services:
+  docker-transformer:
+    environment:
+      - DEFAULT_TOKEN=your-secure-token
+      - LOG_LEVEL=debug
 
-# 日志配置
-LOG_LEVEL=info
-
-# 数据库配置
-DB_PATH=./data/proxy.db
-
-# 认证配置
-DEFAULT_TOKEN=docker-transformer
-
-# Docker配置 (可选)
-# DOCKER_HOST=unix:///var/run/docker.sock
+# 方式2: 使用.env文件
+echo "DEFAULT_TOKEN=your-secure-token" > .env
+echo "LOG_LEVEL=debug" >> .env
 ```
 
 ### 目标仓库支持
@@ -214,41 +364,136 @@ DEFAULT_TOKEN=docker-transformer
 
 ### 常见问题
 
-1. **Docker连接失败**
+1. **容器启动失败**
    ```bash
    # 检查Docker是否运行
    docker info
    
-   # 检查Docker socket权限
-   ls -la /var/run/docker.sock
-   ```
-
-2. **镜像拉取失败**
-   - 检查网络连接
-   - 验证镜像名称是否正确
-   - 确认源镜像仓库可访问
-
-3. **推送失败**
-   - 验证目标仓库地址和认证信息
-   - 检查推送权限
-   - 确认目标项目是否存在
-
-4. **服务启动失败**
-   ```bash
-   # 查看详细日志
-   docker-compose logs -f docker-transformer
+   # 检查容器状态
+   docker-compose ps
+   
+   # 查看启动日志
+   docker-compose logs docker-transformer
    
    # 检查端口占用
    netstat -tlnp | grep 8080
+   # 或者 (Windows)
+   netstat -an | findstr 8080
    ```
 
-### 日志查看
-```bash
-# Docker Compose日志
-docker-compose logs -f
+2. **Docker socket权限问题**
+   ```bash
+   # Linux/Mac: 检查Docker socket权限
+   ls -la /var/run/docker.sock
+   
+   # 添加当前用户到docker组
+   sudo usermod -aG docker $USER
+   
+   # 重启Docker服务
+   sudo systemctl restart docker
+   ```
 
-# 容器内日志
-docker exec -it docker-transformer tail -f /var/log/app.log
+3. **镜像拉取失败**
+   - 检查网络连接和DNS解析
+   - 验证镜像名称格式是否正确
+   - 确认源镜像仓库可访问
+   - 检查是否需要认证
+
+4. **推送到目标仓库失败**
+   - 验证目标仓库地址和认证信息
+   - 确认具有推送权限
+   - 检查目标项目/命名空间是否存在
+   - 验证网络连接
+
+5. **数据持久化问题**
+   ```bash
+   # 检查数据卷状态
+   docker volume inspect transformer_data
+   
+   # 查看数据卷内容
+   docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
+   
+   # 重新创建数据卷（谨慎操作，会丢失数据）
+   docker-compose down
+   docker volume rm transformer_data
+   docker volume create transformer_data
+   docker-compose up -d
+   ```
+
+6. **SQLite数据库错误 (out of memory)**
+   ```bash
+   # 检查Docker卷空间
+   docker system df -v
+   
+   # 清理Docker空间
+   docker system prune -f
+   
+   # 检查系统内存和磁盘空间
+   free -h
+   df -h
+   
+   # 重置数据库（会丢失所有历史记录）
+   docker-compose down
+   docker volume rm transformer_data
+   docker-compose up -d
+   ```
+
+7. **数据库迁移文件找不到错误**
+   ```bash
+   # 如果出现 "no such file or directory: database/migrations.sql" 错误
+   # 这通常是因为使用了旧版本的镜像，请更新到最新版本
+   
+   # 拉取最新镜像
+   docker-compose pull
+   
+   # 重启服务
+   docker-compose up -d
+   
+   # 如果问题仍然存在，强制重新构建
+   docker-compose down
+   docker-compose up -d --force-recreate
+   ```
+
+6. **健康检查失败**
+   ```bash
+   # 手动检查健康状态
+   curl http://localhost:8080/health
+   
+   # 查看容器健康状态
+   docker inspect docker-transformer | grep Health -A 10
+   ```
+
+### 日志查看和调试
+
+```bash
+# 查看实时日志
+docker-compose logs -f docker-transformer
+
+# 查看最近100行日志
+docker-compose logs --tail=100 docker-transformer
+
+# 进入容器调试
+docker-compose exec docker-transformer sh
+
+# 查看容器资源使用
+docker stats docker-transformer
+
+# 检查容器网络
+docker network ls
+docker inspect docker-transformer_default
+```
+
+### 性能优化
+
+```bash
+# 清理Docker缓存
+docker system prune -f
+
+# 清理无用镜像
+docker image prune -f
+
+# 监控容器资源使用
+docker-compose top
 ```
 
 ## 📊 性能指标
@@ -281,9 +526,20 @@ docker exec -it docker-transformer tail -f /var/log/app.log
 ## 🏁 项目状态
 
 - ✅ **核心功能**: 镜像代理、解析、历史记录
-- ✅ **用户界面**: 完整的Web操作界面
-- ✅ **部署方案**: Docker容器化部署
+- ✅ **用户界面**: 完整的Web操作界面  
+- ✅ **容器化部署**: Docker镜像可用，支持多架构(amd64/arm64)
+- ✅ **一键部署**: Docker Compose配置文件
+- ✅ **数据持久化**: SQLite数据库持久化存储
+- ✅ **健康检查**: 内置健康检查和监控
 - ✅ **文档**: 完整的使用和开发文档
 
-**当前版本**: v1.0.0
-**开发状态**: 生产就绪 
+**当前版本**: v1.0.0  
+**Docker镜像**: `ghcr.io/cflmflj/docker-transformer:latest`  
+**开发状态**: 生产就绪
+
+## 📦 镜像信息
+
+- **仓库地址**: [GitHub Container Registry](https://ghcr.io/cflmflj/docker-transformer)
+- **支持架构**: linux/amd64, linux/arm64
+- **镜像大小**: ~50MB (基于Alpine Linux)
+- **更新频率**: 跟随主分支自动构建 

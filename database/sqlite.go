@@ -2,13 +2,16 @@ package database
 
 import (
 	"database/sql"
+	"embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	_ "modernc.org/sqlite"
 )
+
+//go:embed migrations.sql
+var migrationFS embed.FS
 
 var DB *sql.DB
 
@@ -40,9 +43,9 @@ func InitDB(dbPath string) error {
 }
 
 func runMigrations() error {
-	migrationSQL, err := ioutil.ReadFile("database/migrations.sql")
+	migrationSQL, err := migrationFS.ReadFile("migrations.sql")
 	if err != nil {
-		return fmt.Errorf("failed to read migrations file: %v", err)
+		return fmt.Errorf("failed to read embedded migrations file: %v", err)
 	}
 
 	_, err = DB.Exec(string(migrationSQL))
