@@ -110,14 +110,14 @@ func (h *ImageHandler) BuildTargetImage(c *gin.Context) {
 
 	var targetImage string
 	if registry == "docker.io" && namespace == "library" {
-		// nginx:latest -> harbor.com/proxy/nginx:latest
-		targetImage = req.TargetHost + "/proxy/" + repository + ":" + tag
+		// nginx:latest -> harbor.com/transform/nginx:latest
+		targetImage = req.TargetHost + "/transform/" + repository + ":" + tag
 	} else if registry == "docker.io" {
-		// user/nginx:latest -> harbor.com/proxy/user/nginx:latest
-		targetImage = req.TargetHost + "/proxy/" + namespace + "/" + repository + ":" + tag
+		// user/nginx:latest -> harbor.com/transform/user/nginx:latest
+		targetImage = req.TargetHost + "/transform/" + namespace + "/" + repository + ":" + tag
 	} else {
-		// gcr.io/google/nginx:latest -> harbor.com/proxy/gcr.io/google/nginx:latest
-		targetImage = req.TargetHost + "/proxy/" + registry + "/" + namespace + "/" + repository + ":" + tag
+		// gcr.io/google/nginx:latest -> harbor.com/transform/gcr.io/google/nginx:latest
+		targetImage = req.TargetHost + "/transform/" + registry + "/" + namespace + "/" + repository + ":" + tag
 	}
 
 	h.logger.Infof("目标镜像构建成功: %s -> %s", req.SourceImage, targetImage)

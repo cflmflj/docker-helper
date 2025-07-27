@@ -6,17 +6,23 @@ import (
 
 	"docker-transformer/database"
 	"docker-transformer/models"
+	"docker-transformer/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-type HistoryHandler struct{}
-
-func NewHistoryHandler() *HistoryHandler {
-	return &HistoryHandler{}
+type HistoryHandler struct {
+	logger *utils.Logger
 }
 
-// GetHistory 获取代理历史记录
+func NewHistoryHandler() *HistoryHandler {
+	logger := utils.NewLogger("info")
+	return &HistoryHandler{
+		logger: logger,
+	}
+}
+
+// GetHistory 获取转换历史记录
 func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	// 获取分页参数
 	limitStr := c.DefaultQuery("limit", "10")
@@ -35,7 +41,7 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	// 查询历史记录
 	query := `
 		SELECT id, source_image, target_image, target_host, status, error_msg, duration, created_at
-		FROM proxy_history
+		FROM transform_history
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
@@ -92,20 +98,21 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 	query := `
 		SELECT 
-			COUNT(*) as total,
-			SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
-			SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count,
-			AVG(CASE WHEN status = 'success' THEN duration ELSE NULL END) as avg_duration
-		FROM proxy_history
+			COALESCE(COUNT(*), 0) as total,
+			COALESCE(SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END), 0) as success_count,
+			COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0) as failed_count,
+			COALESCE(AVG(CASE WHEN status = 'success' THEN duration ELSE NULL END), 0) as avg_duration
+		FROM transform_history
 	`
 
 	var stats struct {
-		Total        int      `json:"total"`
-		SuccessCount int      `json:"success_count"`
-		FailedCount  int      `json:"failed_count"`
-		AvgDuration  *float64 `json:"avg_duration"`
+		Total        int     `json:"total"`
+		SuccessCount int     `json:"success_count"`
+		FailedCount  int     `json:"failed_count"`
+		AvgDuration  float64 `json:"avg_duration"`
 	}
 
+	h.logger.Infof("执行统计查询: %s", query)
 	err := database.DB.QueryRow(query).Scan(
 		&stats.Total,
 		&stats.SuccessCount,
@@ -113,12 +120,16 @@ func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 		&stats.AvgDuration,
 	)
 	if err != nil {
+		h.logger.Errorf("获取统计信息失败: %v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "获取统计信息失败: " + err.Error(),
 		})
 		return
 	}
+
+	h.logger.Infof("统计信息查询成功: total=%d, success=%d, failed=%d, avg_duration=%.2f",
+		stats.Total, stats.SuccessCount, stats.FailedCount, stats.AvgDuration)
 
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,
@@ -129,7 +140,7 @@ func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 
 // ClearHistory 清空历史记录
 func (h *HistoryHandler) ClearHistory(c *gin.Context) {
-	query := "DELETE FROM proxy_history"
+	query := "DELETE FROM transform_history"
 
 	_, err := database.DB.Exec(query)
 	if err != nil {

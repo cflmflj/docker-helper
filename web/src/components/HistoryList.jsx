@@ -24,7 +24,12 @@ const HistoryList = ({ refreshTrigger }) => {
       }
       
       if (statsResponse.data.success) {
-        setStats(statsResponse.data.stats || { total: 0, success: 0, failed: 0 });
+        const statsData = statsResponse.data.data || {};
+        setStats({ 
+          total: statsData.total || 0, 
+          success: statsData.success_count || 0, 
+          failed: statsData.failed_count || 0 
+        });
       }
     } catch (error) {
       console.error('Failed to fetch history:', error);
@@ -120,7 +125,7 @@ const HistoryList = ({ refreshTrigger }) => {
       <Spin spinning={loading}>
         {history.length === 0 ? (
           <Empty
-            description="暂无代理记录"
+            description="暂无转换记录"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : (

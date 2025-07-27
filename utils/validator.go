@@ -90,13 +90,13 @@ func BuildTargetImageName(sourceImage, targetHost string) string {
 
 	// 构建目标路径
 	if registry == "docker.io" && namespace == "library" {
-		// nginx:latest -> harbor.com/proxy/nginx:latest
-		return fmt.Sprintf("%s/proxy/%s:%s", targetHost, repository, tag)
+		// nginx:latest -> harbor.com/transform/nginx:latest
+		return fmt.Sprintf("%s/transform/%s:%s", targetHost, repository, tag)
 	} else if registry == "docker.io" {
-		// user/nginx:latest -> harbor.com/proxy/user/nginx:latest
-		return fmt.Sprintf("%s/proxy/%s/%s:%s", targetHost, namespace, repository, tag)
+		// user/nginx:latest -> harbor.com/transform/user/nginx:latest
+		return fmt.Sprintf("%s/transform/%s/%s:%s", targetHost, namespace, repository, tag)
 	} else {
-		// gcr.io/google/nginx:latest -> harbor.com/proxy/gcr.io/google/nginx:latest
-		return fmt.Sprintf("%s/proxy/%s/%s/%s:%s", targetHost, registry, namespace, repository, tag)
+		// gcr.io/google/nginx:latest -> harbor.com/transform/gcr.io/google/nginx:latest
+		return fmt.Sprintf("%s/transform/%s/%s/%s:%s", targetHost, registry, namespace, repository, tag)
 	}
 }

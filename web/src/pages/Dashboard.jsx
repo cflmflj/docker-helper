@@ -25,8 +25,8 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import ProxyForm from '../components/ProxyForm';
-import ProxyStatus from '../components/ProxyStatus';
+import TransformForm from '../components/TransformForm';
+import TransformStatus from '../components/TransformStatus';
 import HistoryList from '../components/HistoryList';
 import TokenChangeModal from '../components/TokenChangeModal';
 import './Dashboard.css';
@@ -35,7 +35,7 @@ const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 
 const Dashboard = () => {
-  const [proxyStatus, setProxyStatus] = useState({
+  const [transformStatus, setTransformStatus] = useState({
     status: 'idle', // idle, running, success, error
     message: '',
     progress: ''
@@ -57,8 +57,8 @@ const Dashboard = () => {
     logout();
   };
 
-  const handleProxyComplete = () => {
-    // 代理完成后刷新历史记录
+  const handleTransformComplete = () => {
+    // 转换完成后刷新历史记录
     setRefreshHistory(prev => prev + 1);
   };
 
@@ -84,7 +84,9 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="loading-container">
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large" tip="加载中...">
+          <div style={{ height: '200px' }}></div>
+        </Spin>
       </div>
     );
   }
@@ -102,7 +104,7 @@ const Dashboard = () => {
             <div className="logo">
               <RocketOutlined className="logo-icon" />
               <Title level={4} className="logo-text">
-                Docker镜像代理服务
+                Docker镜像转换服务
               </Title>
             </div>
           </div>
@@ -144,7 +146,7 @@ const Dashboard = () => {
                 <DashboardOutlined className="page-icon" />
                 <div>
                   <Title level={3} className="page-title">控制台</Title>
-                  <Text type="secondary">Docker镜像代理管理平台</Text>
+                  <Text type="secondary">Docker镜像转换管理平台</Text>
                 </div>
               </Space>
             </div>
@@ -157,20 +159,20 @@ const Dashboard = () => {
             {/* 左侧主要操作区 */}
             <Col xs={24} lg={16}>
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                {/* 镜像代理卡片 */}
+                {/* 镜像转换卡片 */}
                 <Card 
                   title={
                     <Space>
                       <RocketOutlined style={{ color: '#1890ff' }} />
-                      <span>镜像代理</span>
+                      <span>镜像转换</span>
                     </Space>
                   }
-                  className="function-card proxy-card"
+                  className="function-card transform-card"
                   size="small"
                 >
-                  <ProxyForm 
-                    onStatusChange={setProxyStatus}
-                    onComplete={handleProxyComplete}
+                  <TransformForm 
+                    onStatusChange={setTransformStatus}
+                    onComplete={handleTransformComplete}
                   />
                 </Card>
 
@@ -180,9 +182,9 @@ const Dashboard = () => {
                     <Space>
                       <Badge 
                         status={
-                          proxyStatus.status === 'running' ? 'processing' :
-                          proxyStatus.status === 'success' ? 'success' :
-                          proxyStatus.status === 'error' ? 'error' : 'default'
+                          transformStatus.status === 'running' ? 'processing' :
+                          transformStatus.status === 'success' ? 'success' :
+                          transformStatus.status === 'error' ? 'error' : 'default'
                         }
                       />
                       <span>执行状态</span>
@@ -191,7 +193,7 @@ const Dashboard = () => {
                   className="function-card status-card"
                   size="small"
                 >
-                  <ProxyStatus status={proxyStatus} />
+                  <TransformStatus status={transformStatus} />
                 </Card>
               </Space>
             </Col>
@@ -202,7 +204,7 @@ const Dashboard = () => {
                 title={
                   <Space>
                     <HistoryOutlined style={{ color: '#52c41a' }} />
-                    <span>代理历史</span>
+                    <span>转换历史</span>
                   </Space>
                 }
                 className="function-card history-card"
@@ -220,7 +222,7 @@ const Dashboard = () => {
       <Footer className="dashboard-footer">
         <div className="footer-content">
           <Text type="secondary">
-            Docker镜像代理服务 ©2025 Created with ❤️
+            Docker镜像转换服务 ©2025 Created with ❤️
           </Text>
           <Space split={<Divider type="vertical" />}>
             <Text type="secondary">版本 1.0.0</Text>

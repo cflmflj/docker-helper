@@ -14,8 +14,8 @@ type LoginRequest struct {
 	Token string `json:"token" binding:"required"`
 }
 
-// 镜像代理请求
-type ProxyRequest struct {
+// 镜像转换请求
+type TransformRequest struct {
 	SourceImage    string `json:"source_image" binding:"required"`
 	TargetHost     string `json:"target_host" binding:"required"`
 	TargetUsername string `json:"target_username" binding:"required"`
@@ -23,8 +23,8 @@ type ProxyRequest struct {
 	TargetImage    string `json:"target_image,omitempty"`
 }
 
-// 镜像代理响应
-type ProxyResponse struct {
+// 镜像转换响应
+type TransformResponse struct {
 	TargetImage string `json:"target_image"`
 	Duration    int    `json:"duration"`
 	Message     string `json:"message"`

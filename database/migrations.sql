@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS config (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 代理历史表  
-CREATE TABLE IF NOT EXISTS proxy_history (
+-- 转换历史表  
+CREATE TABLE IF NOT EXISTS transform_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     source_image TEXT NOT NULL,
     target_image TEXT NOT NULL,

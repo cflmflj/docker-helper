@@ -3,7 +3,7 @@ import { Form, Input, Button, Space, message, Tooltip } from 'antd';
 import { SendOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import api from '../services/api';
 
-const ProxyForm = ({ onStatusChange, onComplete }) => {
+const TransformForm = ({ onStatusChange, onComplete }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [parsedImage, setParsedImage] = useState('');
@@ -39,11 +39,11 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
     let imageName = sourceImage;
     if (sourceImage.includes('/') && !sourceImage.startsWith('library/')) {
       // 如果包含registry，保留完整路径
-      const targetImage = `${targetHost}/proxy/${sourceImage}`;
+      const targetImage = `${targetHost}/transform/${sourceImage}`;
       form.setFieldsValue({ target_image: targetImage });
     } else {
       // 标准镜像，只保留名称和标签
-      const targetImage = `${targetHost}/proxy/${imageName}`;
+      const targetImage = `${targetHost}/transform/${imageName}`;
       form.setFieldsValue({ target_image: targetImage });
     }
   };
@@ -62,18 +62,18 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
     }
   };
 
-  // 开始代理
-  const handleStartProxy = async (values) => {
+  // 开始转换
+  const handleStartTransform = async (values) => {
     setLoading(true);
     
     try {
       onStatusChange({
         status: 'running',
-        message: '准备开始代理...',
+        message: '准备开始转换...',
         progress: ''
       });
 
-      const proxyData = {
+      const transformData = {
         source_image: parsedImage || values.source_image,
         target_host: values.target_host,
         target_username: values.target_username,
@@ -81,23 +81,23 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
         target_image: values.target_image
       };
 
-      const response = await api.post('/proxy/start', proxyData);
+      const response = await api.post('/transform/start', transformData);
       
       if (response.data.success) {
         onStatusChange({
           status: 'success',
-          message: '代理成功!',
+          message: '转换成功!',
           progress: '',
           result: {
-            target_image: response.data.target_image,
-            duration: response.data.duration
+            target_image: response.data.data.target_image || response.data.data.TargetImage,
+            duration: response.data.data.duration || response.data.data.Duration
           }
         });
-        message.success('镜像代理成功!');
+        message.success('镜像转换成功!');
         onComplete();
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || '代理失败';
+      const errorMsg = error.response?.data?.message || '转换失败';
       onStatusChange({
         status: 'error',
         message: errorMsg,
@@ -113,7 +113,7 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
     <Form
       form={form}
       layout="vertical"
-      onFinish={handleStartProxy}
+      onFinish={handleStartTransform}
       autoComplete="off"
     >
       <Form.Item
@@ -182,7 +182,7 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
         rules={[{ required: true, message: '请输入目标镜像名称!' }]}
       >
         <Input
-          placeholder="harbor.example.com/proxy/nginx:latest"
+          placeholder="harbor.example.com/transform/nginx:latest"
           size="large"
         />
       </Form.Item>
@@ -197,11 +197,11 @@ const ProxyForm = ({ onStatusChange, onComplete }) => {
           block
           style={{ height: '48px', borderRadius: '8px', fontSize: '16px', fontWeight: '500' }}
         >
-          🚀 开始代理
+          🚀 开始转换
         </Button>
       </Form.Item>
     </Form>
   );
 };
 
-export default ProxyForm; 
+export default TransformForm; 

@@ -1,7 +1,7 @@
 # 多阶段构建 Dockerfile
 
 # 第一阶段：构建前端
-FROM node:20.9.0-alpine AS frontend-builder
+FROM node:22.12.0-alpine AS frontend-builder
 
 WORKDIR /app/web
 
@@ -71,7 +71,7 @@ EXPOSE 8080
 # 设置环境变量
 ENV GIN_MODE=release
 ENV LOG_LEVEL=info
-ENV DB_PATH=/app/data/proxy.db
+ENV DB_PATH=/app/data/transform.db
 ENV PORT=8080
 ENV TZ=Asia/Shanghai
 

@@ -198,7 +198,7 @@ func main() {
 
 	// 初始化日志
 	logger := utils.NewLogger(cfg.LogLevel)
-	logger.Info("启动Docker镜像代理服务...")
+	logger.Info("启动Docker镜像转换服务...")
 
 	// 初始化数据库
 	if err := database.InitDB(cfg.DBPath); err != nil {
@@ -240,13 +240,13 @@ func main() {
 	historyHandler := handlers.NewHistoryHandler()
 	logger.Info("历史记录处理器初始化完成")
 
-	proxyHandler, err := handlers.NewProxyHandler()
+	transformHandler, err := handlers.NewTransformHandler()
 	if err != nil {
-		logger.Errorf("创建代理处理器失败: %v", err)
+		logger.Errorf("创建转换处理器失败: %v", err)
 		os.Exit(1)
 	}
-	defer proxyHandler.Close()
-	logger.Info("代理处理器初始化完成")
+	defer transformHandler.Close()
+	logger.Info("转换处理器初始化完成")
 
 	imageHandler, err := handlers.NewImageHandler()
 	if err != nil {
@@ -274,8 +274,8 @@ func main() {
 		authenticated := api.Group("")
 		authenticated.Use(middlewares.AuthMiddleware())
 		{
-			// 镜像代理相关
-			authenticated.POST("/proxy/start", proxyHandler.StartProxy)
+			// 镜像转换相关
+			authenticated.POST("/transform/start", transformHandler.StartTransform)
 
 			// 镜像解析相关
 			authenticated.POST("/image/parse", imageHandler.ParseImage)
@@ -313,7 +313,7 @@ func main() {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, map[string]interface{}{
 			"status":  "ok",
-			"message": "Docker镜像代理服务运行正常",
+			"message": "Docker镜像转换服务运行正常",
 		})
 	})
 

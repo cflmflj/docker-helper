@@ -28,10 +28,10 @@ func NewImageService() (*ImageService, error) {
 	}, nil
 }
 
-// ProxyImage 代理镜像：拉取 -> 标记 -> 推送 -> 清理
-func (is *ImageService) ProxyImage(ctx context.Context, sourceImage, targetImage, username, password string) (string, int, error) {
+// TransformImage 转换镜像：拉取 -> 标记 -> 推送 -> 清理
+func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetImage, username, password string) (string, int, error) {
 	startTime := time.Now()
-	is.logger.Infof("开始镜像代理操作: %s -> %s", sourceImage, targetImage)
+	is.logger.Infof("开始镜像转换操作: %s -> %s", sourceImage, targetImage)
 
 	// 1. 验证源镜像名称
 	is.logger.Infof("步骤1: 验证源镜像名称: %s", sourceImage)
@@ -98,7 +98,7 @@ func (is *ImageService) ProxyImage(ctx context.Context, sourceImage, targetImage
 	is.logger.Infof("步骤7: 清理完成，耗时: %v", cleanupDuration)
 
 	duration := int(time.Since(startTime).Seconds())
-	is.logger.Infof("镜像代理操作完成! 总耗时: %d秒，目标镜像: %s", duration, targetImage)
+	is.logger.Infof("镜像转换操作完成! 总耗时: %d秒，目标镜像: %s", duration, targetImage)
 	is.logger.Infof("性能统计 - 拉取: %v, 标记: %v, 推送: %v, 清理: %v",
 		pullDuration, tagDuration, pushDuration, cleanupDuration)
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Docker镜像代理服务启动脚本
+# Docker镜像转换服务启动脚本
 
 set -e
 
@@ -16,7 +16,7 @@ print_message() {
     echo -e "${2}${1}${NC}"
 }
 
-print_message "🐳 Docker镜像代理服务启动脚本" $BLUE
+print_message "🐳 Docker镜像转换服务启动脚本" $BLUE
 
 # 检查Docker是否运行
 if ! docker info >/dev/null 2>&1; then
@@ -41,10 +41,10 @@ print_message "🔒 设置目录权限..." $YELLOW
 chmod 755 data
 
 # 构建并启动服务
-print_message "🚀 构建并启动Docker镜像代理服务..." $YELLOW
+print_message "🚀 构建并启动Docker镜像转换服务..." $YELLOW
 
 if [ "$1" = "--with-nginx" ]; then
-    print_message "📦 启动服务（包含Nginx反向代理）..." $YELLOW
+    print_message "📦 启动服务（包含Nginx反向转发）..." $YELLOW
     docker-compose --profile nginx up --build -d
 else
     print_message "📦 启动服务..." $YELLOW

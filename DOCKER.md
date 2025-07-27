@@ -28,7 +28,7 @@ docker run -d \
 ## 构建阶段说明
 
 ### 第一阶段：前端构建
-- 基于 `node:20.9.0-alpine`
+- 基于 `node:22.12.0-alpine`
 - 安装npm依赖
 - 构建React应用到 `web/dist` 目录
 
@@ -159,7 +159,7 @@ spec:
 |--------|--------|------|
 | `GIN_MODE` | `release` | Gin框架运行模式 |
 | `LOG_LEVEL` | `info` | 日志级别 |
-| `DB_PATH` | `/app/data/proxy.db` | SQLite数据库路径 |
+| `DB_PATH` | `/app/data/transform.db` | SQLite数据库路径 |
 | `PORT` | `8080` | 服务端口 |
 | `TZ` | `Asia/Shanghai` | 时区设置 |
 

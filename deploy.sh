@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Docker镜像代理服务一键部署脚本
+# Docker镜像转换服务一键部署脚本
 # 作者: Docker Transformer Team
 # 版本: v1.0.0
 
@@ -145,7 +145,7 @@ start_service() {
 
 # 显示使用说明
 show_help() {
-    echo "Docker镜像代理服务部署脚本"
+    echo "Docker镜像转换服务部署脚本"
     echo
     echo "用法: $0 [选项]"
     echo
@@ -179,7 +179,7 @@ update_service() {
 
 # 主函数
 main() {
-    echo "🐳 Docker镜像代理服务部署脚本 v1.0.0"
+    echo "🐳 Docker镜像转换服务部署脚本 v1.0.0"
     echo "=============================================="
     echo
     

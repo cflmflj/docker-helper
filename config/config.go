@@ -17,7 +17,7 @@ func Load() *Config {
 		Port:         getEnv("PORT", "8080"),
 		GinMode:      getEnv("GIN_MODE", "debug"),
 		LogLevel:     getEnv("LOG_LEVEL", "info"),
-		DBPath:       getEnv("DB_PATH", "./data/proxy.db"),
+		DBPath:       getEnv("DB_PATH", "./data/transform.db"),
 		DefaultToken: getEnv("DEFAULT_TOKEN", "docker-transformer"),
 	}
 }

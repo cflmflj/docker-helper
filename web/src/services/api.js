@@ -3,7 +3,7 @@ import axios from 'axios';
 // 创建axios实例
 const api = axios.create({
   baseURL: '/api',
-  timeout: 300000, // 5分钟超时，因为镜像代理可能需要较长时间
+  timeout: 300000, // 5分钟超时，因为镜像转换可能需要较长时间
   headers: {
     'Content-Type': 'application/json'
   }

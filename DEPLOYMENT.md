@@ -1,6 +1,6 @@
-# 🚀 Docker镜像代理服务部署指南
+# 🚀 Docker镜像转换服务部署指南
 
-本文档详细说明了如何在不同环境中部署Docker镜像代理服务。
+本文档详细说明了如何在不同环境中部署Docker镜像转换服务。
 
 ## 📋 前提条件
 
@@ -13,8 +13,15 @@
 ### 软件依赖
 - **Docker**: 20.10+ 
 - **Docker Compose**: 2.0+
+- **Node.js**: 22.12.0+ (开发环境，LTS版本)
 - **Git**: 用于克隆代码
 - **Curl**: 用于健康检查
+
+### 前端开发依赖
+- **Node.js**: >= 22.12.0 (LTS版本，必需)
+- **npm**: >= 8.0.0
+
+> ⚠️ **注意**: 如果需要本地开发前端，必须使用 Node.js 22.12.0 或更高版本，否则会遇到 `crypto.hash is not a function` 错误。这是由于 Vite 7.0.6 的要求。
 
 ## 🎯 部署方式
 
@@ -40,7 +47,7 @@ vim .env
 # 基础启动
 ./scripts/start.sh
 
-# 带Nginx反向代理启动
+# 带Nginx反向转发启动
 ./scripts/start.sh --with-nginx
 ```
 
@@ -82,7 +89,7 @@ cat > .env << EOF
 PORT=8080
 GIN_MODE=release
 LOG_LEVEL=info
-DB_PATH=/app/data/proxy.db
+DB_PATH=/app/data/transform.db
 DEFAULT_TOKEN=your-secure-token
 EOF
 ```
@@ -141,7 +148,7 @@ systemctl enable docker-transformer
 systemctl start docker-transformer
 ```
 
-#### 3. 反向代理配置（Nginx）
+#### 3. 反向转发配置（Nginx）
 ```bash
 # 安装Nginx
 apt update && apt install nginx -y
@@ -159,7 +166,7 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         
-        # 镜像代理可能需要较长时间
+        # 镜像转换可能需要较长时间
         proxy_connect_timeout 600s;
         proxy_send_timeout 600s;
         proxy_read_timeout 600s;
@@ -193,7 +200,7 @@ certbot renew --dry-run
 | `PORT` | 8080 | 服务监听端口 |
 | `GIN_MODE` | release | Gin框架模式 (debug/release) |
 | `LOG_LEVEL` | info | 日志级别 (debug/info/warn/error) |
-| `DB_PATH` | /app/data/proxy.db | SQLite数据库路径 |
+| `DB_PATH` | /app/data/transform.db | SQLite数据库路径 |
 | `DEFAULT_TOKEN` | docker-transformer | 默认访问Token |
 
 ### Docker Compose配置
@@ -291,7 +298,7 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # 备份数据库
-docker exec docker-transformer sqlite3 /app/data/proxy.db ".backup /app/data/backup_$DATE.db"
+docker exec docker-transformer sqlite3 /app/data/transform.db ".backup /app/data/backup_$DATE.db"
 docker cp docker-transformer:/app/data/backup_$DATE.db $BACKUP_DIR/
 
 # 备份配置文件
@@ -406,7 +413,7 @@ git checkout HEAD~1
 docker-compose up --build -d
 
 # 恢复数据库备份
-docker cp backup.db docker-transformer:/app/data/proxy.db
+docker cp backup.db docker-transformer:/app/data/transform.db
 docker-compose restart
 ```
 
@@ -435,7 +442,7 @@ docker exec docker-transformer ping docker.io
 # 检查DNS解析
 docker exec docker-transformer nslookup docker.io
 
-# 配置代理（如需要）
+# 配置网络转发（如需要）
 export HTTP_PROXY=http://proxy.company.com:8080
 export HTTPS_PROXY=http://proxy.company.com:8080
 ```
@@ -443,13 +450,13 @@ export HTTPS_PROXY=http://proxy.company.com:8080
 #### 3. 数据库错误
 ```bash
 # 检查数据库文件
-ls -la data/proxy.db
+ls -la data/transform.db
 
 # 数据库完整性检查
-docker exec docker-transformer sqlite3 /app/data/proxy.db "PRAGMA integrity_check;"
+docker exec docker-transformer sqlite3 /app/data/transform.db "PRAGMA integrity_check;"
 
 # 重建数据库
-mv data/proxy.db data/proxy.db.backup
+mv data/transform.db data/transform.db.backup
 docker-compose restart
 ```
 
@@ -475,7 +482,7 @@ dd if=/dev/zero of=testfile bs=1G count=1 oflag=direct
 1. 操作系统版本和架构
 2. Docker和Docker Compose版本
 3. 错误日志和堆栈跟踪
-4. 网络环境和代理配置
+4. 网络环境和转发配置
 5. 硬件资源配置
 
 联系方式：

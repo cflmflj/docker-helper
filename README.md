@@ -1,12 +1,12 @@
-# 🐳 Docker镜像代理服务
+# 🐳 Docker镜像转换服务
 
 一个极简的Web应用，帮助用户将国外镜像仓库的镜像下载并转存到国内的私有仓库中。
 
 ## ✨ 功能特性
 
-- 🎯 **简单易用**: 可视化Web界面，支持一键镜像代理
+- 🎯 **简单易用**: 可视化Web界面，支持一键镜像转换
 - 🔄 **自动解析**: 智能解析各种镜像名称格式
-- 📊 **历史记录**: 完整的代理历史和统计信息
+- 📊 **历史记录**: 完整的转换历史和统计信息
 - 🔐 **安全认证**: Token认证机制保护服务安全
 - 🐳 **容器化**: 完整的Docker部署方案
 - 🚀 **高性能**: 基于Go和React的高性能实现
@@ -20,7 +20,7 @@ docker-transformer/
 ├── main.go                    # 主程序入口
 ├── Dockerfile                 # Docker镜像构建
 ├── docker-compose.yml         # 容器编排配置
-├── nginx.conf                 # Nginx反向代理配置
+├── nginx.conf                 # Nginx反向转发配置
 ├── .dockerignore              # Docker忽略文件
 ├── config/                    # 配置管理
 │   └── config.go
@@ -35,7 +35,7 @@ docker-transformer/
 │   └── image_service.go
 ├── handlers/                  # HTTP处理器
 │   ├── auth.go
-│   ├── proxy.go
+│   ├── transform.go
 │   ├── history.go
 │   └── image.go
 ├── middlewares/               # 中间件
@@ -52,7 +52,7 @@ docker-transformer/
 │       ├── App.css           # 样式文件
 │       ├── index.js          # 入口文件
 │       ├── components/       # 通用组件
-│       │   ├── ProxyForm.jsx
+│       │   ├── TransformForm.jsx
 │       │   ├── StatusDisplay.jsx
 │       │   └── HistoryList.jsx
 │       ├── pages/            # 页面组件
@@ -150,7 +150,38 @@ docker ps
 docker logs -f docker-transformer
 ```
 
-### 方式3: 本地开发
+### 方式3: 本地测试
+
+#### 一键测试脚本（推荐）
+```bash
+# 给脚本执行权限
+chmod +x test-local.sh
+
+# 运行测试脚本
+./test-local.sh
+```
+
+#### 手动构建测试
+```bash
+# 1. 构建本地镜像
+docker build -t docker-transformer:test .
+
+# 2. 启动测试容器
+docker run -d \
+  --name docker-transformer \
+  -p 8080:8080 \
+  -v transformer_test_data:/app/data \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -e LOG_LEVEL=debug \
+  -e DEFAULT_TOKEN=test-token \
+  --user "0:0" \
+  docker-transformer:test
+
+# 3. 查看日志
+docker logs -f docker-transformer
+```
+
+### 方式4: 本地开发
 
 #### 后端启动
 ```bash
@@ -239,7 +270,7 @@ docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
 2. 点击"登录"进入主界面
 3. 如需修改Token，可在设置中更改
 
-### 3. 代理镜像
+### 3. 转换镜像
 1. **输入源镜像**: 支持多种格式
    - `nginx:latest`
    - `docker.io/library/nginx:latest`
@@ -253,11 +284,11 @@ docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
    - 项目名称 (如: `library`)
    - 用户名和密码
 
-4. **执行代理**: 点击"开始代理"执行镜像拉取和推送
+4. **执行转换**: 点击"开始转换"执行镜像拉取和推送
 
 ### 4. 查看历史
-- **操作记录**: 查看所有代理操作的详细信息
-- **状态监控**: 实时查看代理进度和结果
+- **操作记录**: 查看所有转换操作的详细信息
+- **状态监控**: 实时查看转换进度和结果
 - **错误诊断**: 查看详细的错误信息和解决建议
 - **快速复制**: 一键复制生成的镜像地址
 
@@ -272,7 +303,7 @@ docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
 | `PORT` | `8080` | 服务监听端口 |
 | `GIN_MODE` | `release` | Gin框架模式 (`debug`/`release`) |
 | `LOG_LEVEL` | `info` | 日志级别 (`debug`/`info`/`warn`/`error`) |
-| `DB_PATH` | `/app/data/proxy.db` | SQLite数据库文件路径 |
+| `DB_PATH` | `/app/data/transform.db` | SQLite数据库文件路径 |
 | `DEFAULT_TOKEN` | `docker-transformer` | 默认认证Token |
 | `TZ` | `Asia/Shanghai` | 时区设置 |
 
@@ -333,11 +364,11 @@ echo "LOG_LEVEL=debug" >> .env
 - `POST /api/image/parse` - 解析镜像名称
 - `POST /api/image/build-target` - 构建目标镜像名称
 
-### 代理接口
-- `POST /api/proxy/start` - 开始镜像代理
+### 转换接口
+- `POST /api/transform/start` - 开始镜像转换
 
 ### 历史接口
-- `GET /api/history` - 获取代理历史
+- `GET /api/history` - 获取转换历史
 - `GET /api/history/stats` - 获取统计信息
 - `DELETE /api/history` - 清空历史记录
 
@@ -350,7 +381,9 @@ echo "LOG_LEVEL=debug" >> .env
 - **Docker SDK**: 容器操作
 
 ### 前端技术栈
-- **React 18**: 前端框架
+- **Node.js 22.12.0+**: JavaScript运行环境 (LTS版本)
+- **React 19**: 前端框架
+- **Vite 7**: 构建工具
 - **Ant Design 5**: UI组件库
 - **Axios**: HTTP客户端
 
@@ -429,7 +462,34 @@ echo "LOG_LEVEL=debug" >> .env
    - 检查目标项目/命名空间是否存在
    - 验证网络连接
 
-5. **数据持久化问题**
+5. **前端开发环境问题 (crypto.hash is not a function)**
+   
+   **错误信息**: `TypeError: crypto.hash is not a function`
+   
+   **原因**: Node.js版本不兼容 Vite 7.0.6
+   
+   **解决方案**:
+   ```bash
+       # 检查当前Node.js版本
+    node --version
+    
+    # 使用nvm切换到所需版本
+    nvm install 22.12.0
+    nvm use 22.12.0
+   
+   # 重新安装依赖
+   cd web
+   rm -rf node_modules package-lock.json
+   npm install
+   
+   # 启动开发服务器
+   npm run dev
+   ```
+   
+       **版本要求**: 
+    - Node.js >= 22.12.0 (LTS版本，必需)
+
+6. **数据持久化问题**
    ```bash
    # 检查数据卷状态
    docker volume inspect transformer_data
@@ -444,7 +504,7 @@ echo "LOG_LEVEL=debug" >> .env
    docker-compose up -d
    ```
 
-6. **SQLite数据库错误 (out of memory)**
+7. **SQLite数据库错误 (out of memory)**
    ```bash
    # 检查Docker卷空间
    docker system df -v
@@ -462,7 +522,7 @@ echo "LOG_LEVEL=debug" >> .env
    docker-compose up -d
    ```
 
-7. **数据库迁移文件找不到错误**
+8. **数据库迁移文件找不到错误**
    ```bash
    # 如果出现 "no such file or directory: database/migrations.sql" 错误
    # 这通常是因为使用了旧版本的镜像，请更新到最新版本
@@ -478,7 +538,7 @@ echo "LOG_LEVEL=debug" >> .env
    docker-compose up -d --force-recreate
    ```
 
-8. **前端资源加载失败**
+9. **前端资源加载失败**
    ```bash
    # 如果浏览器控制台出现 "Failed to load module script" 错误
    # 或者 "Expected a JavaScript module script but server responded with MIME type text/html"
@@ -496,14 +556,14 @@ echo "LOG_LEVEL=debug" >> .env
    # Firefox: Ctrl+F5 或 F12 -> Network -> 设置 -> Disable cache
    ```
 
-6. **健康检查失败**
-   ```bash
-   # 手动检查健康状态
-   curl http://localhost:8080/health
-   
-   # 查看容器健康状态
-   docker inspect docker-transformer | grep Health -A 10
-   ```
+10. **健康检查失败**
+    ```bash
+    # 手动检查健康状态
+    curl http://localhost:8080/health
+    
+    # 查看容器健康状态
+    docker inspect docker-transformer | grep Health -A 10
+    ```
 
 ### 日志查看和调试
 
@@ -540,7 +600,7 @@ docker-compose top
 
 ## 📊 性能指标
 
-- **镜像代理时间**: 通常 < 5分钟（取决于镜像大小和网络）
+- **镜像转换时间**: 通常 < 5分钟（取决于镜像大小和网络）
 - **界面响应时间**: < 200ms
 - **并发支持**: 支持多用户同时使用
 - **资源占用**: CPU < 500MB, 内存 < 1GB
@@ -567,7 +627,7 @@ docker-compose top
 
 ## 🏁 项目状态
 
-- ✅ **核心功能**: 镜像代理、解析、历史记录
+- ✅ **核心功能**: 镜像转换、解析、历史记录
 - ✅ **用户界面**: 完整的Web操作界面  
 - ✅ **容器化部署**: Docker镜像可用，支持多架构(amd64/arm64)
 - ✅ **一键部署**: Docker Compose配置文件，已解决权限问题

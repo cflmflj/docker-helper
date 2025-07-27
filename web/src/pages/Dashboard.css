@@ -151,7 +151,7 @@
 }
 
 /* 特定卡片样式 */
-.proxy-card .ant-card-head {
+.transform-card .ant-card-head {
   background: linear-gradient(90deg, #f0f9ff 0%, #fff 100%);
 }
 

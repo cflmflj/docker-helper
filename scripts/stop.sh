@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Docker镜像代理服务停止脚本
+# Docker镜像转换服务停止脚本
 
 set -e
 
@@ -16,7 +16,7 @@ print_message() {
     echo -e "${2}${1}${NC}"
 }
 
-print_message "🛑 停止Docker镜像代理服务..." $BLUE
+print_message "🛑 停止Docker镜像转换服务..." $BLUE
 
 # 停止服务
 if docker-compose ps | grep -q "docker-transformer"; then

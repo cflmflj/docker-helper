@@ -19,7 +19,7 @@
 ## 构建流程
 
 ### 1. 前端构建
-- 使用 Node.js 20.9.0
+- 使用 Node.js 22.12.0 (LTS版本)
 - 在 `web/` 目录下运行 `npm ci` 和 `npm run build`
 - 输出到 `web/dist/` 目录
 

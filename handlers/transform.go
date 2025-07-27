@@ -14,12 +14,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProxyHandler struct {
+type TransformHandler struct {
 	imageService *services.ImageService
 	logger       *utils.Logger
 }
 
-func NewProxyHandler() (*ProxyHandler, error) {
+func NewTransformHandler() (*TransformHandler, error) {
 	imageService, err := services.NewImageService()
 	if err != nil {
 		return nil, err
@@ -27,17 +27,17 @@ func NewProxyHandler() (*ProxyHandler, error) {
 
 	logger := utils.NewLogger("info")
 
-	return &ProxyHandler{
+	return &TransformHandler{
 		imageService: imageService,
 		logger:       logger,
 	}, nil
 }
 
-// StartProxy 开始镜像代理
-func (h *ProxyHandler) StartProxy(c *gin.Context) {
-	var req models.ProxyRequest
+// StartTransform 开始镜像转换
+func (h *TransformHandler) StartTransform(c *gin.Context) {
+	var req models.TransformRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		h.logger.Errorf("代理请求参数解析失败: %v", err)
+		h.logger.Errorf("转换请求参数解析失败: %v", err)
 		c.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
 			Message: "请求参数无效: " + err.Error(),
@@ -47,7 +47,7 @@ func (h *ProxyHandler) StartProxy(c *gin.Context) {
 
 	// 记录请求开始
 	clientIP := c.ClientIP()
-	h.logger.Infof("======== 收到镜像代理请求 ========")
+	h.logger.Infof("======== 收到镜像转换请求 ========")
 	h.logger.Infof("客户端IP: %s", clientIP)
 	h.logger.Infof("源镜像: %s", req.SourceImage)
 	h.logger.Infof("目标仓库: %s", req.TargetHost)
@@ -58,9 +58,9 @@ func (h *ProxyHandler) StartProxy(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	// 执行镜像代理
-	h.logger.Infof("开始执行镜像代理操作...")
-	targetImage, duration, err := h.imageService.ProxyImage(
+	// 执行镜像转换
+	h.logger.Infof("开始执行镜像转换操作...")
+	targetImage, duration, err := h.imageService.TransformImage(
 		ctx,
 		req.SourceImage,
 		req.TargetImage, // 使用完整的目标镜像名称
@@ -75,9 +75,9 @@ func (h *ProxyHandler) StartProxy(c *gin.Context) {
 		status = "failed"
 		errStr := err.Error()
 		errorMsg = &errStr
-		h.logger.Errorf("镜像代理操作失败: %v", err)
+		h.logger.Errorf("镜像转换操作失败: %v", err)
 	} else {
-		h.logger.Infof("镜像代理操作成功!")
+		h.logger.Infof("镜像转换操作成功!")
 	}
 
 	// 从目标镜像名称中提取主机地址
@@ -85,46 +85,46 @@ func (h *ProxyHandler) StartProxy(c *gin.Context) {
 	h.recordHistory(req.SourceImage, targetImage, targetHost, status, errorMsg, duration)
 
 	if err != nil {
-		h.logger.Errorf("======== 镜像代理请求失败 ========")
+		h.logger.Errorf("======== 镜像转换请求失败 ========")
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "镜像代理失败: " + err.Error(),
+			Message: "镜像转换失败: " + err.Error(),
 		})
 		return
 	}
 
-	h.logger.Infof("======== 镜像代理请求成功完成 ========")
+	h.logger.Infof("======== 镜像转换请求成功完成 ========")
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,
-		Message: "镜像代理成功",
-		Data: models.ProxyResponse{
+		Message: "镜像转换成功",
+		Data: models.TransformResponse{
 			TargetImage: targetImage,
 			Duration:    duration,
-			Message:     "代理成功",
+			Message:     "转换成功",
 		},
 	})
 }
 
-// recordHistory 记录代理历史
-func (h *ProxyHandler) recordHistory(sourceImage, targetImage, targetHost, status string, errorMsg *string, duration int) {
-	h.logger.Infof("记录代理历史: %s -> %s, 状态: %s, 耗时: %d秒", sourceImage, targetImage, status, duration)
+// recordHistory 记录转换历史
+func (h *TransformHandler) recordHistory(sourceImage, targetImage, targetHost, status string, errorMsg *string, duration int) {
+	h.logger.Infof("记录转换历史: %s -> %s, 状态: %s, 耗时: %d秒", sourceImage, targetImage, status, duration)
 
 	query := `
-		INSERT INTO proxy_history (source_image, target_image, target_host, status, error_msg, duration)
+		INSERT INTO transform_history (source_image, target_image, target_host, status, error_msg, duration)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := database.DB.Exec(query, sourceImage, targetImage, targetHost, status, errorMsg, duration)
 	if err != nil {
 		// 记录历史失败不影响主流程，只打印日志
-		h.logger.Errorf("记录代理历史失败: %v", err)
+		h.logger.Errorf("记录转换历史失败: %v", err)
 	} else {
-		h.logger.Infof("代理历史记录成功")
+		h.logger.Infof("转换历史记录成功")
 	}
 }
 
 // Close 关闭服务
-func (h *ProxyHandler) Close() error {
+func (h *TransformHandler) Close() error {
 	if h.imageService != nil {
 		return h.imageService.Close()
 	}

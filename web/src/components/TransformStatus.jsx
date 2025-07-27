@@ -5,7 +5,7 @@ import { message } from 'antd';
 
 const { Text, Paragraph } = Typography;
 
-const ProxyStatus = ({ status }) => {
+const TransformStatus = ({ status }) => {
   const { status: currentStatus, message: statusMessage, progress, result } = status;
 
   // 复制镜像地址到剪贴板
@@ -24,7 +24,7 @@ const ProxyStatus = ({ status }) => {
         return (
           <Alert
             message="等待开始"
-            description="请填写镜像信息后点击开始代理按钮"
+            description="请填写镜像信息后点击开始转换按钮"
             type="info"
             showIcon
           />
@@ -34,7 +34,7 @@ const ProxyStatus = ({ status }) => {
         return (
           <div>
             <Alert
-              message="正在执行代理"
+              message="正在执行转换"
               description={
                 <div>
                   <div style={{ marginBottom: 8 }}>{statusMessage}</div>
@@ -62,7 +62,7 @@ const ProxyStatus = ({ status }) => {
         return (
           <div>
             <Alert
-              message="代理成功"
+              message="转换成功"
               description={
                 <div>
                   <div style={{ marginBottom: 12 }}>{statusMessage}</div>
@@ -111,7 +111,7 @@ const ProxyStatus = ({ status }) => {
       case 'error':
         return (
           <Alert
-            message="代理失败"
+            message="转换失败"
             description={
               <div>
                 <div style={{ marginBottom: 8 }}>
@@ -134,10 +134,10 @@ const ProxyStatus = ({ status }) => {
   };
 
   return (
-    <div className="proxy-status">
+    <div className="transform-status">
       {renderStatusContent()}
     </div>
   );
 };
 
-export default ProxyStatus; 
+export default TransformStatus; 

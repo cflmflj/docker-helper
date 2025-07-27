@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Docker镜像代理服务
+  # Docker镜像转换服务
   docker-transformer:
     image: ghcr.io/cflmflj/docker-transformer:latest
     container_name: docker-transformer
@@ -12,7 +12,7 @@ services:
       - PORT=8080
       - GIN_MODE=release
       - LOG_LEVEL=info
-      - DB_PATH=/app/data/proxy.db
+      - DB_PATH=/app/data/transform.db
       - DEFAULT_TOKEN=docker-transformer
       - TZ=Asia/Shanghai
     volumes:

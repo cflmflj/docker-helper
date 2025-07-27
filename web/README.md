@@ -1,10 +1,10 @@
-# Docker镜像代理服务 - 前端应用
+# Docker镜像转换服务 - 前端应用
 
 > 🐳 专业的Docker镜像跨境同步平台前端应用
 
 ## 📋 项目简介
 
-Docker镜像代理服务前端是一个基于React 19 + Vite + Ant Design 5构建的现代化Web应用，提供直观的用户界面来管理Docker镜像的跨境同步操作。
+Docker镜像转换服务前端是一个基于React 19 + Vite + Ant Design 5构建的现代化Web应用，提供直观的用户界面来管理Docker镜像的跨境同步操作。
 
 ## ✨ 主要特性
 
@@ -12,7 +12,7 @@ Docker镜像代理服务前端是一个基于React 19 + Vite + Ant Design 5构�
 - 📱 **PWA支持**: 支持离线使用和应用安装
 - 🎨 **响应式设计**: 完美适配桌面端和移动端
 - 🔒 **安全认证**: Token-based身份验证
-- 📊 **实时状态**: 镜像代理过程实时监控
+- 📊 **实时状态**: 镜像转换过程实时监控
 - 📚 **历史记录**: 完整的操作历史和统计信息
 - 🌐 **国际化**: 支持中文界面
 - ⚡ **性能优化**: 代码分割、懒加载、缓存策略
@@ -38,8 +38,10 @@ Docker镜像代理服务前端是一个基于React 19 + Vite + Ant Design 5构�
 ## 📦 安装和运行
 
 ### 环境要求
-- Node.js >= 18.0.0
+- Node.js >= 22.12.0 (LTS版本)
 - npm >= 8.0.0
+
+> ⚠️ **重要提示**: 由于 Vite 7.0.6 的要求，项目需要使用 Node.js 22.12.0 或更高版本以支持新的 crypto.hash API。
 
 ### 开发环境
 
@@ -53,6 +55,33 @@ npm run dev
 # 访问应用
 # http://localhost:3000
 ```
+
+### 常见问题
+
+#### Node.js版本兼容性问题
+
+如果在启动开发服务器时遇到 `TypeError: crypto.hash is not a function` 错误：
+
+```bash
+# 检查当前Node.js版本
+node --version
+
+# 如果版本低于22.12.0，需要升级Node.js
+# 推荐使用nvm管理Node.js版本
+
+# 安装并切换到所需版本
+nvm install 22.12.0
+nvm use 22.12.0
+
+# 清理并重新安装依赖
+rm -rf node_modules package-lock.json
+npm install
+
+# 重新启动开发服务器
+npm run dev
+```
+
+**原因**: Vite 7.0.6 使用了 Node.js 的新 `crypto.hash` API，项目要求使用 Node.js 22.12.0+ (LTS版本) 以确保最佳兼容性和稳定性。
 
 ### 生产构建
 
@@ -106,7 +135,7 @@ server {
     root /path/to/dist;
     index index.html;
     
-    # API代理
+    # API转发
     location /api {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
@@ -191,14 +220,14 @@ web/
 VITE_API_BASE_URL=http://localhost:8080
 
 # 应用标题
-VITE_APP_TITLE=Docker镜像代理服务
+VITE_APP_TITLE=Docker镜像转换服务
 
 # 版本号
 VITE_APP_VERSION=1.0.0
 ```
 
-### 代理配置
-开发环境API代理配置在 `vite.config.js` 中：
+### 转发配置
+开发环境API转发配置在 `vite.config.js` 中：
 
 ```javascript
 proxy: {
@@ -218,7 +247,7 @@ proxy: {
 - 记住登录状态
 
 ### 控制台 (`/dashboard`)
-- 镜像代理操作
+- 镜像转换操作
 - 实时状态监控
 - 历史记录查看
 - 用户设置管理
@@ -236,4 +265,4 @@ MIT License
 
 ---
 
-**Docker镜像代理服务** - 让跨境镜像同步变得简单高效 🚀
+**Docker镜像转换服务** - 让跨境镜像同步变得简单高效 🚀
