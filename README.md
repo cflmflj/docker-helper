@@ -382,15 +382,39 @@ echo "LOG_LEVEL=debug" >> .env
    ```
 
 2. **Docker socket权限问题**
-   ```bash
-   # Linux/Mac: 检查Docker socket权限
-   ls -la /var/run/docker.sock
    
+   **错误信息**: `permission denied while trying to connect to the Docker daemon socket`
+   
+   **当前解决方案**: 使用root用户运行（已配置）
+   ```bash
+   # 当前配置已经设置为使用root用户运行容器
+   # 这确保了对Docker socket的访问权限
+   
+   # 如果仍有问题，重启服务
+   docker-compose down
+   docker-compose up -d
+   ```
+   
+   **替代方案A**: 添加用户到docker组（系统级解决）
+   ```bash
    # 添加当前用户到docker组
    sudo usermod -aG docker $USER
    
+   # 重新登录或重启系统使变更生效
+   newgrp docker
+   
    # 重启Docker服务
    sudo systemctl restart docker
+   
+   # 然后在docker-compose.yml中移除 user: "0:0" 配置
+   ```
+   
+   **替代方案B**: 设置正确的Docker组ID
+   ```bash
+   # 1. 查看Docker socket的组ID
+   stat -c '%g' /var/run/docker.sock
+   
+   # 2. 在docker-compose.yml中使用group_add配置
    ```
 
 3. **镜像拉取失败**
@@ -452,6 +476,24 @@ echo "LOG_LEVEL=debug" >> .env
    # 如果问题仍然存在，强制重新构建
    docker-compose down
    docker-compose up -d --force-recreate
+   ```
+
+8. **前端资源加载失败**
+   ```bash
+   # 如果浏览器控制台出现 "Failed to load module script" 错误
+   # 或者 "Expected a JavaScript module script but server responded with MIME type text/html"
+   
+   # 这通常是前端静态资源MIME类型问题，需要更新到修复版本
+   
+   # 拉取最新镜像
+   docker-compose pull
+   
+   # 重启服务
+   docker-compose up -d
+   
+   # 清除浏览器缓存
+   # Chrome: Ctrl+Shift+R 或 F12 -> Network -> Disable cache
+   # Firefox: Ctrl+F5 或 F12 -> Network -> 设置 -> Disable cache
    ```
 
 6. **健康检查失败**
@@ -528,9 +570,10 @@ docker-compose top
 - ✅ **核心功能**: 镜像代理、解析、历史记录
 - ✅ **用户界面**: 完整的Web操作界面  
 - ✅ **容器化部署**: Docker镜像可用，支持多架构(amd64/arm64)
-- ✅ **一键部署**: Docker Compose配置文件
-- ✅ **数据持久化**: SQLite数据库持久化存储
+- ✅ **一键部署**: Docker Compose配置文件，已解决权限问题
+- ✅ **数据持久化**: Docker卷持久化存储
 - ✅ **健康检查**: 内置健康检查和监控
+- ✅ **权限管理**: 已配置Docker socket访问权限
 - ✅ **文档**: 完整的使用和开发文档
 
 **当前版本**: v1.0.0  

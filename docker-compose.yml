@@ -20,6 +20,8 @@ services:
       - transformer_data:/app/data
       # Docker socket挂载（用于Docker操作）
       - /var/run/docker.sock:/var/run/docker.sock
+    # 使用root用户运行以确保Docker socket访问权限
+    user: "0:0"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s

@@ -33,7 +33,57 @@ func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 		return
 	}
 
-	// 处理静态资源文件
+	// 处理所有静态资源文件（包括assets目录）
+	r.GET("/assets/*filepath", func(c *gin.Context) {
+		filePath := c.Param("filepath")
+		filePath = strings.TrimPrefix(filePath, "/")
+
+		file, err := distFS.Open("assets/" + filePath)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		defer file.Close()
+
+		// 设置适当的Content-Type
+		ext := filepath.Ext(filePath)
+		var contentType string
+		switch ext {
+		case ".js", ".mjs":
+			contentType = "application/javascript; charset=utf-8"
+		case ".css":
+			contentType = "text/css; charset=utf-8"
+		case ".png":
+			contentType = "image/png"
+		case ".jpg", ".jpeg":
+			contentType = "image/jpeg"
+		case ".svg":
+			contentType = "image/svg+xml"
+		case ".woff":
+			contentType = "font/woff"
+		case ".woff2":
+			contentType = "font/woff2"
+		case ".ttf":
+			contentType = "font/ttf"
+		case ".eot":
+			contentType = "application/vnd.ms-fontobject"
+		default:
+			contentType = "application/octet-stream"
+		}
+
+		c.Header("Content-Type", contentType)
+		c.Header("Cache-Control", "public, max-age=31536000")
+
+		content, err := io.ReadAll(file)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		c.Data(http.StatusOK, contentType, content)
+	})
+
+	// 处理静态资源文件（兼容性）
 	r.GET("/static/*filepath", func(c *gin.Context) {
 		filePath := c.Param("filepath")
 		filePath = strings.TrimPrefix(filePath, "/")
@@ -47,18 +97,23 @@ func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 
 		// 设置适当的Content-Type
 		ext := filepath.Ext(filePath)
+		var contentType string
 		switch ext {
-		case ".js":
-			c.Header("Content-Type", "application/javascript")
+		case ".js", ".mjs":
+			contentType = "application/javascript; charset=utf-8"
 		case ".css":
-			c.Header("Content-Type", "text/css")
-		case ".png", ".jpg", ".jpeg":
-			c.Header("Content-Type", "image/"+strings.TrimPrefix(ext, "."))
+			contentType = "text/css; charset=utf-8"
+		case ".png":
+			contentType = "image/png"
+		case ".jpg", ".jpeg":
+			contentType = "image/jpeg"
 		case ".svg":
-			c.Header("Content-Type", "image/svg+xml")
+			contentType = "image/svg+xml"
+		default:
+			contentType = "application/octet-stream"
 		}
 
-		// 设置缓存头
+		c.Header("Content-Type", contentType)
 		c.Header("Cache-Control", "public, max-age=31536000")
 
 		content, err := io.ReadAll(file)
@@ -67,7 +122,7 @@ func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 			return
 		}
 
-		c.Data(http.StatusOK, c.GetHeader("Content-Type"), content)
+		c.Data(http.StatusOK, contentType, content)
 	})
 
 	// 处理其他静态文件
@@ -83,16 +138,21 @@ func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 			defer file.Close()
 
 			// 设置适当的Content-Type
+			var contentType string
 			switch filename {
 			case "manifest.json":
-				c.Header("Content-Type", "application/json")
+				contentType = "application/json; charset=utf-8"
 			case "robots.txt":
-				c.Header("Content-Type", "text/plain")
+				contentType = "text/plain; charset=utf-8"
 			case "sitemap.xml":
-				c.Header("Content-Type", "application/xml")
+				contentType = "application/xml; charset=utf-8"
 			case "favicon.ico":
-				c.Header("Content-Type", "image/x-icon")
+				contentType = "image/x-icon"
+			default:
+				contentType = "application/octet-stream"
 			}
+
+			c.Header("Content-Type", contentType)
 
 			content, err := io.ReadAll(file)
 			if err != nil {
@@ -100,7 +160,7 @@ func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 				return
 			}
 
-			c.Data(http.StatusOK, c.GetHeader("Content-Type"), content)
+			c.Data(http.StatusOK, contentType, content)
 		})
 	}
 }

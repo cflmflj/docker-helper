@@ -133,9 +133,12 @@ start_service() {
         echo "📊 查看服务状态: docker-compose ps"
         echo "📋 查看日志: docker-compose logs -f"
         echo "🛑 停止服务: docker-compose down"
+        echo
+        echo "💡 注意: 容器使用root用户运行以确保Docker socket访问权限"
     else
         log_error "服务启动失败"
         echo "请查看日志: docker-compose logs"
+        echo "如果遇到Docker socket权限问题，请参考README文档"
         exit 1
     fi
 }
