@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Space, message, Tooltip, Radio, Divider } from 'antd';
-import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Space, message, Tooltip, Radio, Divider, Tag, Typography } from 'antd';
+import { PlusOutlined, ExclamationCircleOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import RegistrySelector from './RegistrySelector';
 import RegistryConfigModal from './RegistryConfigModal';
 import ConnectionTestButton from './ConnectionTestButton';
+import { 
+  parseImageName, 
+  generateTargetImageName, 
+  validateImageName, 
+  formatImageInfo, 
+  getGenerationExplanation 
+} from '../utils/imageUtils';
+
+const { Text } = Typography;
 
 const TaskCreateForm = ({ onTaskSubmit }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [parsedImage, setParsedImage] = useState('');
+  
+  // 镜像解析相关状态
+  const [sourceImageInfo, setSourceImageInfo] = useState(null); // 解析后的镜像信息
+  const [targetImageGenerated, setTargetImageGenerated] = useState(false); // 是否自动生成
+  const [generationExplanation, setGenerationExplanation] = useState(''); // 生成说明
+  const [copied, setCopied] = useState(false); // 复制状态
   
   // 仓库配置相关状态
   const [configMode, setConfigMode] = useState('saved'); // 'saved' | 'manual'
@@ -17,56 +31,65 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
   const [configModalVisible, setConfigModalVisible] = useState(false);
 
   // 解析镜像名称
-  const parseImage = async (imageValue) => {
-    if (!imageValue || !imageValue.trim()) {
-      setParsedImage('');
+  const parseAndGenerateImage = (sourceImage, targetRegistry) => {
+    if (!sourceImage || !sourceImage.trim()) {
+      setSourceImageInfo(null);
+      setTargetImageGenerated(false);
+      setGenerationExplanation('');
       return;
     }
 
-    try {
-      const response = await api.post('/image/parse', { image: imageValue.trim() });
-      if (response.data.success) {
-        setParsedImage(response.data.parsed_image);
-        // 自动生成目标镜像名称
-        const targetHost = form.getFieldValue('target_host');
-        if (targetHost) {
-          generateTargetImage(response.data.parsed_image, targetHost);
-        }
+    // 解析源镜像
+    const parsed = parseImageName(sourceImage.trim());
+    setSourceImageInfo(parsed);
+
+    // 如果有目标仓库，自动生成目标镜像
+    if (parsed && targetRegistry) {
+      const targetImage = generateTargetImageName(sourceImage.trim(), targetRegistry);
+      if (targetImage) {
+        form.setFieldsValue({ target_image: targetImage });
+        setTargetImageGenerated(true);
+        setGenerationExplanation(getGenerationExplanation(sourceImage.trim(), targetRegistry));
       }
-    } catch (error) {
-      console.error('Parse image error:', error);
-      setParsedImage(imageValue.trim());
     }
   };
 
-  // 生成目标镜像名称
-  const generateTargetImage = (sourceImage, targetHost) => {
-    if (!sourceImage || !targetHost) return;
-    
-    // 移除源镜像中的registry部分（如果有）
-    let imageName = sourceImage;
-    if (sourceImage.includes('/') && !sourceImage.startsWith('library/')) {
-      // 如果包含registry，保留完整路径
-      const targetImage = `${targetHost}/transform/${sourceImage}`;
-      form.setFieldsValue({ target_image: targetImage });
+  // 获取当前的目标仓库地址
+  const getCurrentTargetRegistry = () => {
+    if (configMode === 'saved' && selectedConfig) {
+      return selectedConfig.registry_url;
     } else {
-      // 标准镜像，只保留名称和标签
-      const targetImage = `${targetHost}/transform/${imageName}`;
-      form.setFieldsValue({ target_image: targetImage });
+      return form.getFieldValue('target_host');
     }
   };
 
   // 处理源镜像输入变化
   const handleSourceImageChange = (e) => {
-    const value = e.target.value;
-    parseImage(value);
+    const sourceImage = e.target.value;
+    const targetRegistry = getCurrentTargetRegistry();
+    parseAndGenerateImage(sourceImage, targetRegistry);
   };
 
   // 处理目标仓库地址变化
   const handleTargetHostChange = (e) => {
     const targetHost = e.target.value;
-    if (parsedImage && targetHost) {
-      generateTargetImage(parsedImage, targetHost);
+    const sourceImage = form.getFieldValue('source_image');
+    if (sourceImage) {
+      parseAndGenerateImage(sourceImage, targetHost);
+    }
+  };
+
+  // 复制目标镜像名称
+  const copyTargetImage = () => {
+    const targetImage = form.getFieldValue('target_image');
+    if (targetImage) {
+      navigator.clipboard.writeText(targetImage).then(() => {
+        setCopied(true);
+        message.success('目标镜像名称已复制');
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        message.error('复制失败');
+      });
     }
   };
 
@@ -90,8 +113,9 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
     });
     
     // 更新目标镜像
-    if (parsedImage) {
-      generateTargetImage(parsedImage, config.registry_url);
+    const sourceImage = form.getFieldValue('source_image');
+    if (sourceImage) {
+      parseAndGenerateImage(sourceImage, config.registry_url);
     }
   };
 
@@ -118,14 +142,14 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
       if (configMode === 'saved' && selectedConfig) {
         // 使用已保存配置
         taskData = {
-          source_image: parsedImage || values.source_image,
+          source_image: sourceImageInfo?.original || values.source_image,
           target_image: values.target_image,
           config_id: selectedConfig.id  // 传递配置ID，后端会解密密码
         };
       } else {
         // 手动输入模式
         taskData = {
-          source_image: parsedImage || values.source_image,
+          source_image: sourceImageInfo?.original || values.source_image,
           target_host: values.target_host,
           target_username: values.target_username,
           target_password: values.target_password,
@@ -138,7 +162,9 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
       
       // 重置表单
       form.resetFields();
-      setParsedImage('');
+      setSourceImageInfo(null);
+      setTargetImageGenerated(false);
+      setGenerationExplanation('');
       setSelectedConfig(null);
     } catch (error) {
       const errorMsg = error.response?.data?.message || '创建任务失败';
@@ -159,7 +185,17 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
         label="📦 源镜像"
         name="source_image"
         rules={[
-          { required: true, message: '请输入源镜像名称!' }
+          { required: true, message: '请输入源镜像名称!' },
+          {
+            validator: (_, value) => {
+              if (!value) return Promise.resolve();
+              const validation = validateImageName(value);
+              if (!validation.valid) {
+                return Promise.reject(new Error(validation.error));
+              }
+              return Promise.resolve();
+            }
+          }
         ]}
       >
         <Input
@@ -169,9 +205,20 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
         />
       </Form.Item>
 
-      {parsedImage && parsedImage !== form.getFieldValue('source_image') && (
-        <div style={{ marginTop: -16, marginBottom: 16, color: '#52c41a', fontSize: '12px' }}>
-          解析后的镜像: {parsedImage}
+      {/* 镜像解析信息 */}
+      {sourceImageInfo && (
+        <div style={{ marginTop: -16, marginBottom: 16 }}>
+          <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            <div style={{ fontSize: '12px' }}>
+              <Text type="secondary">镜像信息: </Text>
+              <Tag color="blue" size="small">{formatImageInfo(sourceImageInfo)}</Tag>
+            </div>
+            {sourceImageInfo.registry !== 'docker.io' && (
+              <div style={{ fontSize: '11px', color: '#999' }}>
+                Registry: {sourceImageInfo.registry} | Namespace: {sourceImageInfo.namespace} | Repository: {sourceImageInfo.repository}:{sourceImageInfo.tag}
+              </div>
+            )}
+          </Space>
         </div>
       )}
 
@@ -245,7 +292,7 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
         label={
           <span>
             🏷️ 目标镜像
-            <Tooltip title="目标镜像名称将自动生成，您也可以手动修改">
+            <Tooltip title="目标镜像名称将根据源镜像和目标仓库自动生成，您也可以手动修改">
               <ExclamationCircleOutlined style={{ marginLeft: 4, color: '#1890ff' }} />
             </Tooltip>
           </span>
@@ -254,10 +301,37 @@ const TaskCreateForm = ({ onTaskSubmit }) => {
         rules={[{ required: true, message: '请输入目标镜像名称!' }]}
       >
         <Input
-          placeholder="harbor.example.com/transform/nginx:latest"
+          placeholder="harbor.example.com/library/nginx:latest"
           size="large"
+          suffix={
+            form.getFieldValue('target_image') && (
+              <Tooltip title="复制目标镜像名称">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={copied ? <CheckOutlined style={{ color: '#52c41a' }} /> : <CopyOutlined />}
+                  onClick={copyTargetImage}
+                />
+              </Tooltip>
+            )
+          }
         />
       </Form.Item>
+
+      {/* 自动生成说明 */}
+      {targetImageGenerated && generationExplanation && (
+        <div style={{ marginTop: -16, marginBottom: 16 }}>
+          <Space size={4}>
+            <CheckOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
+            <Text style={{ fontSize: '12px', color: '#52c41a' }}>
+              已自动生成
+            </Text>
+            <Text style={{ fontSize: '11px', color: '#999' }}>
+              {generationExplanation}
+            </Text>
+          </Space>
+        </div>
+      )}
 
       <Form.Item>
         <Button

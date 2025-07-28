@@ -22,7 +22,7 @@ func NewHistoryHandler() *HistoryHandler {
 	}
 }
 
-// GetHistory 获取转换历史记录
+// GetHistory 获取转换历史记录（从tasks表中查询已完成的任务）
 func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	// 获取分页参数
 	limitStr := c.DefaultQuery("limit", "10")
@@ -38,10 +38,11 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 		offset = 0
 	}
 
-	// 查询历史记录
+	// 从tasks表查询已完成的任务作为历史记录
 	query := `
 		SELECT id, source_image, target_image, target_host, status, error_msg, duration, created_at
-		FROM transform_history
+		FROM tasks
+		WHERE status IN ('completed', 'failed', 'cancelled')
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
@@ -59,8 +60,9 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	var history []models.HistoryItem
 	for rows.Next() {
 		var item models.HistoryItem
+		var taskID string
 		err := rows.Scan(
-			&item.ID,
+			&taskID,
 			&item.SourceImage,
 			&item.TargetImage,
 			&item.TargetHost,
@@ -76,6 +78,15 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 			})
 			return
 		}
+
+		// 将UUID转换为整型ID（为了兼容前端）
+		item.ID = len(history) + 1 + offset
+
+		// 状态映射：completed -> success（保持前端兼容）
+		if item.Status == "completed" {
+			item.Status = "success"
+		}
+
 		history = append(history, item)
 	}
 
@@ -94,15 +105,16 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	})
 }
 
-// GetHistoryStats 获取历史统计信息
+// GetHistoryStats 获取历史统计信息（从tasks表统计已完成任务）
 func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 	query := `
 		SELECT 
 			COALESCE(COUNT(*), 0) as total,
-			COALESCE(SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END), 0) as success_count,
+			COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as success_count,
 			COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0) as failed_count,
-			COALESCE(AVG(CASE WHEN status = 'success' THEN duration ELSE NULL END), 0) as avg_duration
-		FROM transform_history
+			COALESCE(AVG(CASE WHEN status = 'completed' THEN duration ELSE NULL END), 0) as avg_duration
+		FROM tasks
+		WHERE status IN ('completed', 'failed', 'cancelled')
 	`
 
 	var stats struct {
@@ -138,11 +150,11 @@ func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 	})
 }
 
-// ClearHistory 清空历史记录
+// ClearHistory 清空历史记录（删除tasks表中已完成的任务）
 func (h *HistoryHandler) ClearHistory(c *gin.Context) {
-	query := "DELETE FROM transform_history"
+	query := "DELETE FROM tasks WHERE status IN ('completed', 'failed', 'cancelled')"
 
-	_, err := database.DB.Exec(query)
+	result, err := database.DB.Exec(query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
@@ -150,6 +162,10 @@ func (h *HistoryHandler) ClearHistory(c *gin.Context) {
 		})
 		return
 	}
+
+	// 获取删除的记录数
+	rowsAffected, _ := result.RowsAffected()
+	h.logger.Infof("已清空 %d 条历史记录", rowsAffected)
 
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,

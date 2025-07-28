@@ -32,6 +32,7 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [formValues, setFormValues] = useState({}); // 用于实时跟踪表单值
 
   useEffect(() => {
     if (visible) {
@@ -122,18 +123,21 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
 
   const handleEdit = (config) => {
     setEditingConfig(config);
-    form.setFieldsValue({
+    const values = {
       name: config.name,
       registry_url: config.registry_url,
       username: config.username,
       // 不设置密码，让用户选择是否更新
       is_default: config.is_default
-    });
+    };
+    form.setFieldsValue(values);
+    setFormValues(values); // 同时更新formValues以便测试按钮使用
   };
 
   const handleCancel = () => {
     form.resetFields();
     setEditingConfig(null);
+    setFormValues({}); // 清空表单值状态
   };
 
   const getStatusTag = (status) => {
@@ -171,40 +175,28 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
       footer={null}
       destroyOnClose
     >
-      <div style={{ display: 'flex', gap: 24, height: '500px' }}>
+      <div style={{ display: 'flex', gap: 24, height: '550px', overflow: 'hidden' }}>
         {/* 左侧：配置列表 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <div style={{ marginBottom: 16 }}>
             <Space>
-              <Button 
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setEditingConfig(null);
-                  form.resetFields();
-                }}
-              >
-                新建配置
-              </Button>
-              <Button onClick={fetchConfigs} loading={loading}>
+              <span style={{ fontWeight: 500 }}>已保存的配置</span>
+              <Button onClick={fetchConfigs} loading={loading} size="small">
                 刷新
               </Button>
             </Space>
           </div>
 
-          <div style={{ height: '420px', overflow: 'auto' }}>
+          <div style={{ height: '470px', overflow: 'auto' }}>
             <Spin spinning={loading}>
               {configs.length === 0 ? (
                 <Empty
                   description="暂无仓库配置"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 >
-                  <Button type="primary" onClick={() => {
-                    setEditingConfig(null);
-                    form.resetFields();
-                  }}>
-                    创建第一个配置
-                  </Button>
+                  <div style={{ color: '#999', fontSize: '12px' }}>
+                    请在右侧表单中创建第一个配置
+                  </div>
                 </Empty>
               ) : (
                 <List
@@ -281,17 +273,21 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
         <Divider type="vertical" style={{ height: '100%' }} />
 
         {/* 右侧：编辑表单 */}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: 16 }}>
             <h4>{editingConfig ? `编辑配置: ${editingConfig.name}` : '新建配置'}</h4>
           </div>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSave}
-            disabled={submitting}
-          >
+          <div style={{ flex: 1, overflow: 'auto', paddingRight: '8px' }}>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSave}
+              onValuesChange={(changedValues, allValues) => {
+                setFormValues(allValues);
+              }}
+              disabled={submitting}
+            >
             <Form.Item
               label="配置名称"
               name="name"
@@ -338,7 +334,7 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
             </Form.Item>
 
             <Form.Item>
-              <Space>
+              <Space wrap>
                 <Button 
                   type="primary" 
                   htmlType="submit"
@@ -350,14 +346,20 @@ const RegistryConfigModal = ({ visible, onClose, onConfigChange }) => {
                   取消
                 </Button>
                 <ConnectionTestButton
-                  registryURL={form.getFieldValue('registry_url')}
-                  username={form.getFieldValue('username')}
-                  password={form.getFieldValue('password')}
+                  registryURL={formValues.registry_url}
+                  username={formValues.username}
+                  password={formValues.password}
                   size="default"
+                  onTestResult={(result) => {
+                    if (result.success) {
+                      console.log('连接测试成功:', result);
+                    }
+                  }}
                 />
               </Space>
             </Form.Item>
           </Form>
+          </div>
         </div>
       </div>
     </Modal>

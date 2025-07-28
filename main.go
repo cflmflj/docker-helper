@@ -24,6 +24,32 @@ import (
 //go:embed all:web/dist
 var webAssets embed.FS
 
+// isPollingRequest 判断是否为轮询请求，用于过滤日志
+func isPollingRequest(path, method string) bool {
+	if method != "GET" {
+		return false
+	}
+
+	// 过滤轮询相关的接口，减少日志噪音
+	pollingPaths := []string{
+		"/api/tasks/", // GET /api/tasks/{id} - 单个任务状态查询
+		"/api/tasks?", // GET /api/tasks - 任务列表查询
+	}
+
+	for _, pollingPath := range pollingPaths {
+		if strings.Contains(path, pollingPath) {
+			return true
+		}
+	}
+
+	// 特殊处理：完全匹配任务列表接口
+	if path == "/api/tasks" {
+		return true
+	}
+
+	return false
+}
+
 // setupStaticAssets 配置嵌入的静态文件服务
 func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 	// 获取嵌入的文件系统
@@ -216,6 +242,11 @@ func main() {
 
 	// 添加中间件
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		// 过滤轮询请求的日志，减少日志噪音
+		if isPollingRequest(param.Path, param.Method) {
+			return ""
+		}
+
 		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
 			param.ClientIP,
 			param.TimeStamp.Format("2006/01/02 - 15:04:05"),
@@ -259,6 +290,14 @@ func main() {
 	registryHandler := handlers.NewRegistryHandler()
 	logger.Info("仓库配置处理器初始化完成")
 
+	taskHandler, err := handlers.NewTaskHandler()
+	if err != nil {
+		logger.Errorf("创建任务处理器失败: %v", err)
+		os.Exit(1)
+	}
+	defer taskHandler.Close()
+	logger.Info("任务处理器初始化完成")
+
 	// 注册API路由
 	logger.Info("注册API路由...")
 
@@ -296,6 +335,13 @@ func main() {
 			authenticated.DELETE("/registry/configs/:id", registryHandler.DeleteConfig)
 			authenticated.POST("/registry/test", registryHandler.TestConnection)
 			authenticated.POST("/registry/configs/:id/test", registryHandler.TestConfigConnection)
+
+			// 任务管理相关（异步任务）
+			authenticated.GET("/tasks", taskHandler.GetTaskList)
+			authenticated.POST("/tasks", taskHandler.CreateTask)
+			authenticated.GET("/tasks/:id", taskHandler.GetTask)
+			authenticated.DELETE("/tasks/:id", taskHandler.CancelTask)
+			authenticated.GET("/tasks/stats", taskHandler.GetTaskStats)
 		}
 	}
 

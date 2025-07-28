@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import api, { 
   getTasks, 
   getTaskStats, 
   createTask as apiCreateTask, 
-  getTaskProgress, 
+  createTransformTask,
+  getTaskStatus, 
   cancelTask as apiCancelTask, 
   changePriority as apiChangePriority 
 } from '../services/api';
@@ -35,43 +36,48 @@ export const TaskProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [pollInterval, setPollInterval] = useState(null);
+  const pollIntervalRef = useRef(null);
+  const activeTasksRef = useRef(new Set()); // 追踪活跃任务的ID
 
-  // 获取任务列表和最近历史
+  // 获取任务列表（当前+队列+最近）
   const fetchTasks = async () => {
     try {
-      // 由于后端暂未实现任务队列管理，我们先从历史记录中获取最近的数据
+      // 并行获取任务列表和历史记录
       const [tasksResponse, historyResponse] = await Promise.all([
-        getTasks(), // 这个暂时返回空数组，用于未来的任务队列功能
-        api.get('/history') // 获取实际的历史记录
+        getTasks(),
+        api.get('/history?limit=5') // 获取最近5条历史记录
       ]);
-      
-      // 处理任务队列（暂时为空，待后端实现）
+
       let current = null;
       let queue = [];
       
       if (tasksResponse.data.success) {
-        const taskList = tasksResponse.data.data || [];
-        current = taskList.find(task => task.status === 'running') || null;
-        queue = taskList.filter(task => task.status === 'queued')
-                        .sort((a, b) => new Date(a.queue_time) - new Date(b.queue_time));
+        const taskData = tasksResponse.data.data || {};
+        current = taskData.current || null;
+        queue = taskData.queue || [];
       }
-      
-      // 处理最近历史记录
+
       let recent = [];
       if (historyResponse.data.success) {
-        const historyList = historyResponse.data.data || [];
-        recent = historyList
-                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                  .slice(0, 5); // 只取最近5条
+        recent = historyResponse.data.data || [];
       }
-      
+
       setTasks(prev => ({
         ...prev,
         current,
         queue,
         recent
       }));
+
+      // 更新活跃任务集合
+      const newActiveTasks = new Set();
+      if (current) {
+        newActiveTasks.add(current.id);
+      }
+      queue.forEach(task => {
+        newActiveTasks.add(task.id);
+      });
+      activeTasksRef.current = newActiveTasks;
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
@@ -80,15 +86,15 @@ export const TaskProvider = ({ children }) => {
   // 获取任务统计
   const fetchTaskStats = async () => {
     try {
-      const response = await getTaskStats();
+      const response = await api.get('/history/stats');
       if (response.data.success) {
         const statsData = response.data.data || {};
         setTasks(prev => ({
           ...prev,
           stats: {
             total: statsData.total || 0,
-            running: statsData.running || 0,
-            queued: statsData.queued || 0,
+            running: 0, // 历史统计中没有running状态
+            queued: 0,  // 历史统计中没有queued状态
             success: statsData.success_count || 0,
             failed: statsData.failed_count || 0,
             avgDuration: Math.round(statsData.avg_duration || 0)
@@ -100,43 +106,63 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  // 获取任务进度
-  const fetchTaskProgress = async (taskId) => {
+  // 获取单个任务状态
+  const fetchTaskStatus = async (taskId) => {
     if (!taskId) return;
     
     try {
-      const response = await getTaskProgress(taskId);
+      const response = await getTaskStatus(taskId);
       if (response.data.success) {
-        const progress = response.data.data;
+        const taskData = response.data.data;
+        
+        // 更新当前任务状态
         setTasks(prev => ({
           ...prev,
-          current: prev.current ? {
-            ...prev.current,
-            progress
-          } : null
+          current: prev.current?.id === taskId ? taskData : prev.current
         }));
+
+        return taskData;
       }
     } catch (error) {
-      console.error('Failed to fetch task progress:', error);
+      console.error('Failed to fetch task status:', error);
     }
   };
 
-  // 创建任务
+  // 创建异步任务
   const createTask = async (taskData) => {
     setLoading(true);
     try {
-      const response = await apiCreateTask(taskData);
+      // 使用新的异步任务接口或兼容接口
+      const response = await createTransformTask(taskData);
       if (response.data.success) {
-        message.success('镜像转换成功！');
-        // 延迟一下再刷新，确保后端已经记录了历史
-        setTimeout(async () => {
+        const result = response.data.data;
+        
+        // 检查是否返回了任务ID（异步模式）
+        if (result.message && result.message.includes('任务ID:')) {
+          // 异步模式：立即返回任务ID
+          const taskId = result.message.split('任务ID: ')[1];
+          message.success('任务已创建，正在后台执行...');
+          
+          // 立即刷新任务列表
           await fetchTasks();
           await fetchTaskStats();
-        }, 1000);
-        return response.data.data;
+          
+          // 开始轮询该任务的状态
+          startTaskPolling(taskId);
+          
+          return { taskId, target_image: result.target_image };
+        } else {
+          // 同步模式（兼容旧行为）
+          message.success('镜像转换成功！');
+          setTimeout(async () => {
+            await fetchTasks();
+            await fetchTaskStats();
+          }, 1000);
+          return result;
+        }
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || '镜像转换失败';
+      const errorMsg = error.response?.data?.message || '创建任务失败';
       message.error(errorMsg);
       throw error;
     } finally {
@@ -173,32 +199,70 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  // 开始轮询
+  // 智能轮询间隔计算
+  const getPollingInterval = (hasActiveTasks) => {
+    if (!hasActiveTasks) {
+      return 30000; // 无活跃任务时，30秒轮询一次历史记录
+    }
+    return 2000; // 有活跃任务时，2秒轮询一次
+  };
+
+  // 开始智能轮询
   const startPolling = () => {
-    if (pollInterval) return;
+    if (pollIntervalRef.current) return;
     
-    const interval = setInterval(async () => {
+    const poll = async () => {
       await fetchTasks();
       await fetchTaskStats();
       
-      // 如果有当前任务，获取其进度
-      if (tasks.current) {
-        await fetchTaskProgress(tasks.current.id);
-      }
-    }, 2000);
+      // 检查是否有活跃任务
+      const hasActiveTasks = activeTasksRef.current.size > 0;
+      const interval = getPollingInterval(hasActiveTasks);
+      
+      // 设置下一次轮询
+      pollIntervalRef.current = setTimeout(poll, interval);
+    };
     
-    setPollInterval(interval);
+    // 立即开始第一次轮询
+    poll();
   };
 
   // 停止轮询
   const stopPolling = () => {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      setPollInterval(null);
+    if (pollIntervalRef.current) {
+      clearTimeout(pollIntervalRef.current);
+      pollIntervalRef.current = null;
     }
   };
 
-  // 初始化数据
+  // 开始特定任务的轮询
+  const startTaskPolling = (taskId) => {
+    const pollTask = async () => {
+      const taskData = await fetchTaskStatus(taskId);
+      
+      // 检查任务是否完成
+      if (taskData && ['completed', 'failed', 'cancelled'].includes(taskData.status)) {
+        message.success(
+          taskData.status === 'completed' 
+            ? `任务执行成功！耗时 ${taskData.duration} 秒` 
+            : `任务已${taskData.status === 'failed' ? '失败' : '取消'}`
+        );
+        
+        // 任务完成后刷新列表
+        await fetchTasks();
+        await fetchTaskStats();
+        return; // 停止轮询
+      }
+      
+      // 继续轮询
+      setTimeout(pollTask, 2000);
+    };
+    
+    // 延迟1秒开始轮询，给后端时间处理
+    setTimeout(pollTask, 1000);
+  };
+
+  // 初始化数据和轮询
   useEffect(() => {
     fetchTasks();
     fetchTaskStats();
@@ -209,22 +273,12 @@ export const TaskProvider = ({ children }) => {
     };
   }, []);
 
-  // 监听当前任务变化，控制轮询
+  // 组件卸载时清理
   useEffect(() => {
-    // 由于当前没有真正的任务队列，我们简化轮询逻辑
-    // 只在有活动任务时进行轮询，或者定期更新历史记录
-    if (tasks.current) {
-      startPolling();
-    } else {
-      // 如果没有活动任务，设置较长间隔的轮询来更新历史记录
-      const longInterval = setInterval(async () => {
-        await fetchTasks();
-        await fetchTaskStats();
-      }, 30000); // 30秒更新一次历史记录
-      
-      return () => clearInterval(longInterval);
-    }
-  }, [tasks.current]);
+    return () => {
+      stopPolling();
+    };
+  }, []);
 
   const value = {
     tasks,
@@ -234,7 +288,8 @@ export const TaskProvider = ({ children }) => {
     changePriority,
     fetchTasks,
     fetchTaskStats,
-    fetchTaskProgress
+    fetchTaskStatus,
+    startTaskPolling
   };
 
   return (
