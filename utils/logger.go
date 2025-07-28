@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 type Logger struct {
@@ -16,6 +17,24 @@ func NewLogger(level string) *Logger {
 		Logger: log.New(os.Stdout, "", log.LstdFlags),
 		level:  level,
 	}
+}
+
+// isPollingPath 判断是否为轮询相关的路径
+func isPollingPath(path string) bool {
+	pollingPaths := []string{
+		"/api/tasks",
+		"/api/tasks/",
+		"/api/history",
+		"/api/history/stats",
+		"/api/tasks/stats",
+	}
+
+	for _, pollingPath := range pollingPaths {
+		if path == pollingPath || strings.HasPrefix(path, pollingPath) {
+			return true
+		}
+	}
+	return false
 }
 
 func (l *Logger) Info(args ...interface{}) {
@@ -43,5 +62,34 @@ func (l *Logger) Errorf(format string, args ...interface{}) {
 func (l *Logger) Debugf(format string, args ...interface{}) {
 	if l.level == "debug" {
 		l.Printf("[DEBUG] "+format, args...)
+	}
+}
+
+// InfoPolling 轮询感知的Info日志，轮询请求使用DEBUG级别
+func (l *Logger) InfoPolling(path string, format string, args ...interface{}) {
+	if isPollingPath(path) {
+		l.Debugf(format, args...)
+	} else {
+		l.Infof(format, args...)
+	}
+}
+
+// InfoPollingSimple 轮询感知的简单Info日志
+func (l *Logger) InfoPollingSimple(path string, args ...interface{}) {
+	if isPollingPath(path) {
+		l.Debug(args...)
+	} else {
+		l.Info(args...)
+	}
+}
+
+// DebugSQL SQL查询的调试日志，只在debug模式下显示
+func (l *Logger) DebugSQL(query string, args ...interface{}) {
+	if l.level == "debug" {
+		if len(args) > 0 {
+			l.Printf("[DEBUG] SQL查询: %s, 参数: %v", query, args)
+		} else {
+			l.Printf("[DEBUG] SQL查询: %s", query)
+		}
 	}
 }

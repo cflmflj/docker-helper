@@ -24,32 +24,6 @@ import (
 //go:embed all:web/dist
 var webAssets embed.FS
 
-// isPollingRequest 判断是否为轮询请求，用于过滤日志
-func isPollingRequest(path, method string) bool {
-	if method != "GET" {
-		return false
-	}
-
-	// 过滤轮询相关的接口，减少日志噪音
-	pollingPaths := []string{
-		"/api/tasks/", // GET /api/tasks/{id} - 单个任务状态查询
-		"/api/tasks?", // GET /api/tasks - 任务列表查询
-	}
-
-	for _, pollingPath := range pollingPaths {
-		if strings.Contains(path, pollingPath) {
-			return true
-		}
-	}
-
-	// 特殊处理：完全匹配任务列表接口
-	if path == "/api/tasks" {
-		return true
-	}
-
-	return false
-}
-
 // setupStaticAssets 配置嵌入的静态文件服务
 func setupStaticAssets(r *gin.Engine, logger *utils.Logger) {
 	// 获取嵌入的文件系统
@@ -243,7 +217,7 @@ func main() {
 	// 添加中间件
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		// 过滤轮询请求的日志，减少日志噪音
-		if isPollingRequest(param.Path, param.Method) {
+		if utils.IsPollingRequest(param.Path, param.Method) {
 			return ""
 		}
 

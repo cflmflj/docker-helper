@@ -24,7 +24,9 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		clientIP := c.ClientIP()
 		requestPath := c.Request.URL.Path
-		authLogger.Infof("认证检查: IP=%s, Path=%s", clientIP, requestPath)
+
+		// 使用轮询感知的日志记录
+		authLogger.InfoPolling(requestPath, "认证检查: IP=%s, Path=%s", clientIP, requestPath)
 
 		// 从Header获取Token
 		authHeader := c.GetHeader("Authorization")
@@ -85,8 +87,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 验证通过，继续处理
-		authLogger.Infof("认证成功: IP=%s, Path=%s", clientIP, requestPath)
+		// 验证通过，使用轮询感知的日志记录
+		authLogger.InfoPolling(requestPath, "认证成功: IP=%s, Path=%s", clientIP, requestPath)
 		c.Next()
 	}
 }

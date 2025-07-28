@@ -47,8 +47,12 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 		LIMIT ? OFFSET ?
 	`
 
+	// 使用DEBUG级别记录SQL查询
+	h.logger.DebugSQL(query, limit, offset)
+
 	rows, err := database.DB.Query(query, limit, offset)
 	if err != nil {
+		h.logger.Errorf("查询历史记录失败: %v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "查询历史记录失败: " + err.Error(),
@@ -72,6 +76,7 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 			&item.CreatedAt,
 		)
 		if err != nil {
+			h.logger.Errorf("解析历史记录失败: %v", err)
 			c.JSON(http.StatusInternalServerError, models.Response{
 				Success: false,
 				Message: "解析历史记录失败: " + err.Error(),
@@ -91,12 +96,17 @@ func (h *HistoryHandler) GetHistory(c *gin.Context) {
 	}
 
 	if err = rows.Err(); err != nil {
+		h.logger.Errorf("读取历史记录失败: %v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "读取历史记录失败: " + err.Error(),
 		})
 		return
 	}
+
+	// 成功时使用轮询感知的日志
+	requestPath := c.Request.URL.Path
+	h.logger.InfoPolling(requestPath, "获取历史记录成功，返回 %d 条记录", len(history))
 
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,
@@ -124,7 +134,9 @@ func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 		AvgDuration  float64 `json:"avg_duration"`
 	}
 
-	h.logger.Infof("执行统计查询: %s", query)
+	// 使用DEBUG级别记录SQL查询，避免轮询时的日志噪音
+	h.logger.DebugSQL(query)
+
 	err := database.DB.QueryRow(query).Scan(
 		&stats.Total,
 		&stats.SuccessCount,
@@ -140,8 +152,10 @@ func (h *HistoryHandler) GetHistoryStats(c *gin.Context) {
 		return
 	}
 
-	h.logger.Infof("统计信息查询成功: total=%d, success=%d, failed=%d, avg_duration=%.2f",
-		stats.Total, stats.SuccessCount, stats.FailedCount, stats.AvgDuration)
+	// 成功时使用轮询感知的日志，简化输出
+	requestPath := c.Request.URL.Path
+	h.logger.InfoPolling(requestPath, "统计查询成功: total=%d, success=%d, failed=%d",
+		stats.Total, stats.SuccessCount, stats.FailedCount)
 
 	c.JSON(http.StatusOK, models.Response{
 		Success: true,
@@ -156,6 +170,7 @@ func (h *HistoryHandler) ClearHistory(c *gin.Context) {
 
 	result, err := database.DB.Exec(query)
 	if err != nil {
+		h.logger.Errorf("清空历史记录失败: %v", err)
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
 			Message: "清空历史记录失败: " + err.Error(),
