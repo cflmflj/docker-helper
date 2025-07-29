@@ -1,397 +1,209 @@
 # 🐳 Docker镜像转换服务
 
-一个极简的Web应用，帮助用户将国外镜像仓库的镜像下载并转存到国内的私有仓库中。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)](https://golang.org/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-20.10+-2496ED?logo=docker)](https://www.docker.com/)
+[![GitHub release](https://img.shields.io/github/v/release/cflmflj/docker-transformer)](https://github.com/cflmflj/docker-transformer/releases)
 
-## ✨ 功能特性
+一个功能完整、易于使用的Docker镜像跨仓库转换服务，专为解决网络受限环境下的镜像获取问题而设计。
 
-- 🎯 **简单易用**: 可视化Web界面，支持一键镜像转换
-- 🔄 **自动解析**: 智能解析各种镜像名称格式
-- 📊 **历史记录**: 完整的转换历史和统计信息
-- 🔐 **安全认证**: Token认证机制保护服务安全
-- 🐳 **容器化**: 完整的Docker部署方案
-- 🚀 **高性能**: 基于Go和React的高性能实现
+![Dashboard Screenshot](docs/images/dashboard.png)
 
-## 🏗️ 项目结构
+## ✨ 核心特性
 
-```
-docker-transformer/
-├── README.md                   # 项目说明
-├── go.mod                     # Go模块配置
-├── main.go                    # 主程序入口
-├── Dockerfile                 # Docker镜像构建
-├── docker-compose.yml         # 容器编排配置
-├── nginx.conf                 # Nginx反向转发配置
-├── .dockerignore              # Docker忽略文件
-├── config/                    # 配置管理
-│   └── config.go
-├── database/                  # 数据库相关
-│   ├── sqlite.go
-│   └── migrations.sql
-├── models/                    # 数据模型
-│   ├── config.go
-│   └── response.go
-├── services/                  # 业务服务
-│   ├── docker_service.go
-│   └── image_service.go
-├── handlers/                  # HTTP处理器
-│   ├── auth.go
-│   ├── transform.go
-│   ├── history.go
-│   └── image.go
-├── middlewares/               # 中间件
-│   ├── auth.go
-│   └── cors.go
-├── utils/                     # 工具函数
-│   ├── logger.go
-│   └── validator.go
-├── web/                       # React前端
-│   ├── package.json
-│   ├── public/index.html
-│   └── src/
-│       ├── App.jsx            # 主应用组件
-│       ├── App.css           # 样式文件
-│       ├── index.js          # 入口文件
-│       ├── components/       # 通用组件
-│       │   ├── TransformForm.jsx
-│       │   ├── StatusDisplay.jsx
-│       │   └── HistoryList.jsx
-│       ├── pages/            # 页面组件
-│       │   ├── LoginPage.jsx
-│       │   └── MainPage.jsx
-│       └── services/         # API服务
-│           └── api.js
-├── scripts/                   # 部署脚本
-│   ├── start.sh              # 启动脚本
-│   └── stop.sh               # 停止脚本
-└── data/                      # 数据目录
-    └── .gitkeep
-```
+### 🚀 镜像转换
+- **多源仓库支持**: Docker Hub、GCR、Quay.io等主流镜像仓库
+- **智能镜像解析**: 自动补全镜像标签，支持多种镜像名称格式
+- **异步任务处理**: 后台执行转换任务，支持实时进度监控
+- **自动目标镜像生成**: 根据源镜像和目标仓库自动生成规范的目标镜像名称
+
+### 📊 任务管理
+- **实时任务监控**: 查看当前执行任务的详细进度和日志
+- **任务队列管理**: 支持多任务排队，可调整优先级
+- **状态追踪**: 完整的任务状态生命周期管理
+- **错误处理**: 详细的错误信息和重试机制
+
+### 🏪 仓库配置
+- **多仓库配置**: 支持保存和管理多个目标仓库配置
+- **连接测试**: 验证仓库连接和认证信息
+- **加密存储**: 敏感信息采用加密存储
+- **配置复用**: 快速选择已保存的仓库配置
+
+### 🔐 安全认证
+- **Token认证机制**: 简单而安全的认证方式
+- **会话管理**: 安全的登录状态管理
+- **权限控制**: 基于Token的访问控制
+
+### 📝 历史记录
+- **完整转换历史**: 记录所有转换操作的详细信息
+- **状态统计**: 成功率、耗时统计等
+- **搜索筛选**: 支持按镜像名称、状态、时间筛选
+
+### 🎨 现代化界面
+- **响应式设计**: 支持桌面和移动设备访问
+- **实时更新**: 任务状态和进度实时刷新
+- **直观操作**: 清晰的操作流程和状态反馈
 
 ## 🚀 快速开始
 
-### 方式1: Docker Compose部署（推荐）
+### 一键部署（推荐）
 
-#### 前提条件
-- Docker 20.10+
-- Docker Compose 2.0+
-- 确保Docker服务正在运行
-
-#### 一键部署（推荐）
 ```bash
 # 下载并运行一键部署脚本
 curl -fsSL https://raw.githubusercontent.com/cflmflj/docker-transformer/main/deploy.sh | bash
 
-# 或者下载后执行
-wget https://raw.githubusercontent.com/cflmflj/docker-transformer/main/deploy.sh
-chmod +x deploy.sh
-./deploy.sh
+# 或者使用自定义配置
+./deploy.sh -t your-custom-token -p 9090
 ```
 
-#### 手动部署
+### 使用Docker Compose
+
 ```bash
-# 1. 下载docker-compose.yml文件
+# 下载配置文件
 wget https://raw.githubusercontent.com/cflmflj/docker-transformer/main/docker-compose.yml
 
-# 2. 启动服务（会自动创建数据卷）
+# 启动服务
 docker-compose up -d
 
-# 3. 查看服务状态
-docker-compose ps
-
-# 4. 查看日志（可选）
-docker-compose logs -f docker-transformer
+# 访问服务
+open http://localhost:8080
 ```
 
-#### 自定义部署
-```bash
-# 使用自定义Token部署
-./deploy.sh -t your-custom-token
-
-# 使用自定义端口部署
-./deploy.sh -p 9090
-
-# 组合使用
-./deploy.sh -t my-token -p 9090
-```
-
-#### 完整部署（包含源码）
-```bash
-# 1. 克隆项目
-git clone https://github.com/cflmflj/docker-transformer.git
-cd docker-transformer
-
-# 2. 启动服务
-docker-compose up -d
-
-# 3. 查看服务状态
-docker-compose ps
-```
-
-### 方式2: Docker直接运行
+### 使用Docker
 
 ```bash
-# 1. 创建数据卷
-docker volume create transformer_data
-
-# 2. 直接运行容器
 docker run -d \
   --name docker-transformer \
-  --restart unless-stopped \
   -p 8080:8080 \
-  -v transformer_data:/app/data \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -e DEFAULT_TOKEN=your-custom-token \
+  -v transformer_data:/app/data \
   ghcr.io/cflmflj/docker-transformer:latest
-
-# 3. 查看容器状态
-docker ps
-
-# 4. 查看容器日志
-docker logs -f docker-transformer
 ```
 
-### 方式3: 本地测试
-
-#### 一键测试脚本（推荐）
-```bash
-# 给脚本执行权限
-chmod +x test-local.sh
-
-# 运行测试脚本
-./test-local.sh
-```
-
-#### 手动构建测试
-```bash
-# 1. 构建本地镜像
-docker build -t docker-transformer:test .
-
-# 2. 启动测试容器
-docker run -d \
-  --name docker-transformer \
-  -p 8080:8080 \
-  -v transformer_test_data:/app/data \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -e LOG_LEVEL=debug \
-  -e DEFAULT_TOKEN=test-token \
-  --user "0:0" \
-  docker-transformer:test
-
-# 3. 查看日志
-docker logs -f docker-transformer
-```
-
-### 方式4: 本地开发
-
-#### 后端启动
-```bash
-# 下载Go依赖
-go mod tidy
-
-# 运行后端服务
-go run main.go
-```
-
-#### 前端启动
-```bash
-# 进入前端目录
-cd web
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
-
-## 🔄 容器管理
-
-### 常用Docker Compose命令
-
-```bash
-# 启动服务（后台运行）
-docker-compose up -d
-
-# 查看服务状态
-docker-compose ps
-
-# 查看实时日志
-docker-compose logs -f
-
-# 重启服务
-docker-compose restart
-
-# 停止服务
-docker-compose stop
-
-# 停止并删除容器
-docker-compose down
-
-# 更新镜像并重启
-docker-compose pull && docker-compose up -d
-
-# 查看资源使用情况
-docker-compose top
-```
-
-### 数据备份与恢复
-
-```bash
-# 备份数据（从Docker卷）
-docker run --rm \
-  -v transformer_data:/app/data \
-  -v $(pwd):/backup \
-  alpine tar -czf /backup/backup-$(date +%Y%m%d).tar.gz -C /app/data .
-
-# 恢复数据（到Docker卷）
-docker-compose down
-docker run --rm \
-  -v transformer_data:/app/data \
-  -v $(pwd):/backup \
-  alpine sh -c "cd /app/data && tar -xzf /backup/backup-20231201.tar.gz"
-docker-compose up -d
-
-# 查看数据卷信息
-docker volume inspect transformer_data
-
-# 列出数据卷内容
-docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
-```
-
-## 🎯 使用指南
-
-### 1. 访问系统
-- **服务地址**: `http://localhost:8080`
+### 默认登录信息
+- **访问地址**: http://localhost:8080
 - **默认Token**: `docker-transformer`
-- **健康检查**: `http://localhost:8080/health`
 
-### 2. 登录认证
-1. 在登录页面输入Token（默认：`docker-transformer`）
-2. 点击"登录"进入主界面
-3. 如需修改Token，可在设置中更改
+> ⚠️ **安全提醒**: 首次登录后请立即修改默认Token
 
-### 3. 转换镜像
-1. **输入源镜像**: 支持多种格式
-   - `nginx:latest`
-   - `docker.io/library/nginx:latest`
-   - `gcr.io/project/image:tag`
-   - `registry.k8s.io/pause:3.6`
+## 🛠️ 技术架构
 
-2. **解析镜像**: 点击"解析"按钮验证镜像格式和可用性
+### 后端技术栈
+- **[Go 1.23+](https://golang.org/)**: 高性能后端服务
+- **[Gin Framework](https://gin-gonic.com/)**: 轻量级Web框架
+- **[SQLite](https://www.sqlite.org/)**: 轻量级数据库
+- **[Docker SDK](https://docs.docker.com/engine/api/sdk/)**: 官方Docker操作SDK
 
-3. **配置目标仓库**: 填写目标私有仓库信息
-   - 仓库地址 (如: `harbor.example.com`)
-   - 项目名称 (如: `library`)
-   - 用户名和密码
+### 前端技术栈
+- **[React 18](https://reactjs.org/)**: 现代化前端框架
+- **[Ant Design 5](https://ant.design/)**: 企业级UI组件库
+- **[Vite](https://vitejs.dev/)**: 快速构建工具
 
-4. **执行转换**: 点击"开始转换"执行镜像拉取和推送
+### 部署支持
+- **Docker**: 容器化部署
+- **Docker Compose**: 一键部署
+- **多架构支持**: AMD64和ARM64
 
-### 4. 查看历史
-- **操作记录**: 查看所有转换操作的详细信息
-- **状态监控**: 实时查看转换进度和结果
-- **错误诊断**: 查看详细的错误信息和解决建议
-- **快速复制**: 一键复制生成的镜像地址
+## 📁 项目结构
+
+```
+docker-transformer/
+├── 📄 main.go                    # 主程序入口
+├── 📁 config/                    # 配置管理
+├── 📁 database/                  # 数据库相关
+├── 📁 handlers/                  # API处理器
+├── 📁 models/                    # 数据模型
+├── 📁 services/                  # 业务逻辑层
+├── 📁 utils/                     # 工具函数
+├── 📁 web/                       # 前端代码
+│   ├── 📁 src/
+│   │   ├── 📁 components/        # React组件
+│   │   ├── 📁 pages/             # 页面组件
+│   │   ├── 📁 services/          # API服务
+│   │   └── 📁 utils/             # 工具函数
+│   └── 📁 dist/                  # 构建产物（嵌入到Go二进制）
+├── 🐳 Dockerfile                # Docker构建文件
+├── 🐳 docker-compose.yml        # Docker Compose配置
+└── 📚 docs/                     # 文档目录
+```
+
+## 📚 文档
+
+- **[发布说明](./RELEASE_NOTES.md)** - v1.0.0版本详细发布说明
+- **[用户指南](./USER_GUIDE.md)** - 详细的使用说明和最佳实践
+- **[部署指南](./DEPLOYMENT.md)** - 完整的部署和运维指南
+- **[API文档](./API.md)** - RESTful API接口文档
+- **[开发指南](./DEVELOPMENT.md)** - 开发环境搭建和贡献指南
+
+## 🚀 使用示例
+
+### 基本转换流程
+
+1. **登录系统**
+   ```
+   访问: http://localhost:8080
+   Token: docker-transformer
+   ```
+
+2. **配置转换任务**
+   ```
+   源镜像: nginx:latest
+   目标仓库: harbor.company.com
+   目标镜像: harbor.company.com/transform/nginx:latest
+   ```
+
+3. **执行转换**
+   - 系统自动拉取源镜像
+   - 重新标记为目标镜像
+   - 推送到目标仓库
+   - 显示转换结果
+
+### 支持的镜像格式
+
+```bash
+# 基础格式（自动补全latest标签）
+nginx
+
+# 标准格式
+nginx:1.20
+redis:alpine
+
+# 完整路径格式  
+docker.io/library/nginx:latest
+gcr.io/google-containers/pause:3.2
+quay.io/prometheus/prometheus:v2.40.0
+```
 
 ## 🔧 配置说明
 
 ### 环境变量
 
-支持以下环境变量配置：
-
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
 | `PORT` | `8080` | 服务监听端口 |
-| `GIN_MODE` | `release` | Gin框架模式 (`debug`/`release`) |
-| `LOG_LEVEL` | `info` | 日志级别 (`debug`/`info`/`warn`/`error`) |
+| `GIN_MODE` | `release` | Gin运行模式（debug/release） |
+| `LOG_LEVEL` | `info` | 日志级别（debug/info/warn/error） |
 | `DB_PATH` | `/app/data/transform.db` | SQLite数据库文件路径 |
 | `DEFAULT_TOKEN` | `docker-transformer` | 默认认证Token |
-| `TZ` | `Asia/Shanghai` | 时区设置 |
 
-### Docker Compose配置自定义
+### 数据持久化
 
-创建 `docker-compose.override.yml` 文件进行个性化配置：
+服务使用SQLite数据库存储：
+- 用户认证信息
+- 仓库配置（加密存储）
+- 转换历史记录
+- 任务状态信息
 
-```yaml
-version: '3.8'
+数据库文件位置：`/app/data/transform.db`
 
-services:
-  docker-transformer:
-    environment:
-      # 自定义Token
-      - DEFAULT_TOKEN=my-custom-token
-      # 自定义端口
-      - PORT=9090
-    ports:
-      # 映射到自定义端口
-      - "9090:9090"
-    volumes:
-      # 自定义数据目录
-      - /path/to/custom/data:/app/data
-```
+## 🔒 安全考虑
 
-### 环境变量配置示例
-
-```bash
-# 方式1: 在docker-compose.yml中直接修改
-services:
-  docker-transformer:
-    environment:
-      - DEFAULT_TOKEN=your-secure-token
-      - LOG_LEVEL=debug
-
-# 方式2: 使用.env文件
-echo "DEFAULT_TOKEN=your-secure-token" > .env
-echo "LOG_LEVEL=debug" >> .env
-```
-
-### 目标仓库支持
-
-支持以下类型的私有仓库：
-- Harbor
-- Docker Registry
-- 阿里云容器镜像服务
-- 腾讯云容器镜像服务
-- 其他兼容Docker Registry API的仓库
-
-## 📋 API文档
-
-### 认证接口
-- `POST /api/auth/login` - 用户登录
-- `POST /api/auth/logout` - 用户退出
-- `POST /api/auth/change-token` - 修改Token
-
-### 镜像接口
-- `POST /api/image/parse` - 解析镜像名称
-- `POST /api/image/build-target` - 构建目标镜像名称
-
-### 转换接口
-- `POST /api/transform/start` - 开始镜像转换
-
-### 历史接口
-- `GET /api/history` - 获取转换历史
-- `GET /api/history/stats` - 获取统计信息
-- `DELETE /api/history` - 清空历史记录
-
-## 🛠️ 开发指南
-
-### 后端技术栈
-- **Go 1.21+**: 主要编程语言
-- **Gin**: Web框架
-- **SQLite**: 数据库
-- **Docker SDK**: 容器操作
-
-### 前端技术栈
-- **Node.js 22.12.0+**: JavaScript运行环境 (LTS版本)
-- **React 19**: 前端框架
-- **Vite 7**: 构建工具
-- **Ant Design 5**: UI组件库
-- **Axios**: HTTP客户端
-
-### 代码结构
-- 采用MVC架构模式
-- 服务层封装业务逻辑
-- 中间件处理横切关注点
-- 组件化的前端架构
+- **Token认证**: 使用安全的Token认证机制
+- **密码加密**: 仓库密码采用AES加密存储
+- **会话管理**: 安全的登录状态管理
+- **权限控制**: 基于Token的API访问控制
+- **网络隔离**: 建议部署在安全的网络环境中
 
 ## 🔍 故障排除
 
@@ -407,242 +219,116 @@ echo "LOG_LEVEL=debug" >> .env
    
    # 查看启动日志
    docker-compose logs docker-transformer
-   
-   # 检查端口占用
-   netstat -tlnp | grep 8080
-   # 或者 (Windows)
-   netstat -an | findstr 8080
    ```
 
 2. **Docker socket权限问题**
-   
-   **错误信息**: `permission denied while trying to connect to the Docker daemon socket`
-   
-   **当前解决方案**: 使用root用户运行（已配置）
    ```bash
    # 当前配置已经设置为使用root用户运行容器
-   # 这确保了对Docker socket的访问权限
-   
    # 如果仍有问题，重启服务
    docker-compose down
    docker-compose up -d
-   ```
-   
-   **替代方案A**: 添加用户到docker组（系统级解决）
-   ```bash
-   # 添加当前用户到docker组
-   sudo usermod -aG docker $USER
-   
-   # 重新登录或重启系统使变更生效
-   newgrp docker
-   
-   # 重启Docker服务
-   sudo systemctl restart docker
-   
-   # 然后在docker-compose.yml中移除 user: "0:0" 配置
-   ```
-   
-   **替代方案B**: 设置正确的Docker组ID
-   ```bash
-   # 1. 查看Docker socket的组ID
-   stat -c '%g' /var/run/docker.sock
-   
-   # 2. 在docker-compose.yml中使用group_add配置
    ```
 
 3. **镜像拉取失败**
    - 检查网络连接和DNS解析
    - 验证镜像名称格式是否正确
    - 确认源镜像仓库可访问
-   - 检查是否需要认证
 
 4. **推送到目标仓库失败**
    - 验证目标仓库地址和认证信息
    - 确认具有推送权限
    - 检查目标项目/命名空间是否存在
-   - 验证网络连接
 
-5. **前端开发环境问题 (crypto.hash is not a function)**
-   
-   **错误信息**: `TypeError: crypto.hash is not a function`
-   
-   **原因**: Node.js版本不兼容 Vite 7.0.6
-   
-   **解决方案**:
-   ```bash
-       # 检查当前Node.js版本
-    node --version
-    
-    # 使用nvm切换到所需版本
-    nvm install 22.12.0
-    nvm use 22.12.0
-   
-   # 重新安装依赖
-   cd web
-   rm -rf node_modules package-lock.json
-   npm install
-   
-   # 启动开发服务器
-   npm run dev
-   ```
-   
-       **版本要求**: 
-    - Node.js >= 22.12.0 (LTS版本，必需)
+详细故障排除请参考完整文档。
 
-6. **数据持久化问题**
-   ```bash
-   # 检查数据卷状态
-   docker volume inspect transformer_data
-   
-   # 查看数据卷内容
-   docker run --rm -v transformer_data:/app/data alpine ls -la /app/data
-   
-   # 重新创建数据卷（谨慎操作，会丢失数据）
-   docker-compose down
-   docker volume rm transformer_data
-   docker volume create transformer_data
-   docker-compose up -d
-   ```
+## 🚀 开发
 
-7. **SQLite数据库错误 (out of memory)**
-   ```bash
-   # 检查Docker卷空间
-   docker system df -v
-   
-   # 清理Docker空间
-   docker system prune -f
-   
-   # 检查系统内存和磁盘空间
-   free -h
-   df -h
-   
-   # 重置数据库（会丢失所有历史记录）
-   docker-compose down
-   docker volume rm transformer_data
-   docker-compose up -d
-   ```
+### 本地开发环境
 
-8. **数据库迁移文件找不到错误**
-   ```bash
-   # 如果出现 "no such file or directory: database/migrations.sql" 错误
-   # 这通常是因为使用了旧版本的镜像，请更新到最新版本
-   
-   # 拉取最新镜像
-   docker-compose pull
-   
-   # 重启服务
-   docker-compose up -d
-   
-   # 如果问题仍然存在，强制重新构建
-   docker-compose down
-   docker-compose up -d --force-recreate
-   ```
-
-9. **前端资源加载失败**
-   ```bash
-   # 如果浏览器控制台出现 "Failed to load module script" 错误
-   # 或者 "Expected a JavaScript module script but server responded with MIME type text/html"
-   
-   # 这通常是前端静态资源MIME类型问题，需要更新到修复版本
-   
-   # 拉取最新镜像
-   docker-compose pull
-   
-   # 重启服务
-   docker-compose up -d
-   
-   # 清除浏览器缓存
-   # Chrome: Ctrl+Shift+R 或 F12 -> Network -> Disable cache
-   # Firefox: Ctrl+F5 或 F12 -> Network -> 设置 -> Disable cache
-   ```
-
-10. **健康检查失败**
-    ```bash
-    # 手动检查健康状态
-    curl http://localhost:8080/health
-    
-    # 查看容器健康状态
-    docker inspect docker-transformer | grep Health -A 10
-    ```
-
-### 日志查看和调试
+#### 后端开发
 
 ```bash
-# 查看实时日志
-docker-compose logs -f docker-transformer
+# 1. 克隆项目
+git clone https://github.com/cflmflj/docker-transformer.git
+cd docker-transformer
 
-# 查看最近100行日志
-docker-compose logs --tail=100 docker-transformer
+# 2. 安装Go依赖
+go mod download
 
-# 进入容器调试
-docker-compose exec docker-transformer sh
-
-# 查看容器资源使用
-docker stats docker-transformer
-
-# 检查容器网络
-docker network ls
-docker inspect docker-transformer_default
+# 3. 运行后端服务
+go run main.go
 ```
 
-### 性能优化
+#### 前端开发
 
 ```bash
-# 清理Docker缓存
-docker system prune -f
+# 1. 进入前端目录
+cd web
 
-# 清理无用镜像
-docker image prune -f
+# 2. 安装Node.js依赖
+npm install
 
-# 监控容器资源使用
-docker-compose top
+# 3. 启动开发服务器
+npm run dev
 ```
 
-## 📊 性能指标
+#### 构建生产版本
 
-- **镜像转换时间**: 通常 < 5分钟（取决于镜像大小和网络）
-- **界面响应时间**: < 200ms
-- **并发支持**: 支持多用户同时使用
-- **资源占用**: CPU < 500MB, 内存 < 1GB
+```bash
+# 1. 构建前端
+cd web
+npm run build
 
-## 🤝 贡献指南
+# 2. 构建后端（包含前端资源）
+cd ..
+go build -o docker-transformer
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+# 3. 构建Docker镜像
+docker build -t docker-transformer:local .
+```
+
+### 贡献指南
+
+1. Fork本项目
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建Pull Request
+
+## 📊 版本历史
+
+- **v1.0.0** (2025-01-28) - 首次正式发布
+  - 完整的镜像转换功能
+  - 现代化Web界面
+  - 异步任务管理
+  - 仓库配置管理
+  - 历史记录和统计
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+本项目采用 [MIT 许可证](./LICENSE) - 详见LICENSE文件。
 
-## 🆘 支持
+## 🤝 支持与反馈
 
-如果您遇到问题或需要帮助：
+### 获取帮助
+- **📖 在线文档**: 查阅完整的使用文档
+- **🐛 Bug报告**: [GitHub Issues](https://github.com/cflmflj/docker-transformer/issues)
+- **💡 功能建议**: [GitHub Discussions](https://github.com/cflmflj/docker-transformer/discussions)
 
-1. 查看 [故障排除](#-故障排除) 部分
-2. 搜索现有的 [Issues](../../issues)
-3. 创建新的 [Issue](../../issues/new)
+### 社区
+- **⭐ Star项目**: 如果这个项目对您有帮助，请给个Star
+- **🔗 分享**: 将项目分享给需要的朋友
+- **📝 反馈**: 告诉我们您的使用体验
 
-## 🏁 项目状态
+---
 
-- ✅ **核心功能**: 镜像转换、解析、历史记录
-- ✅ **用户界面**: 完整的Web操作界面  
-- ✅ **容器化部署**: Docker镜像可用，支持多架构(amd64/arm64)
-- ✅ **一键部署**: Docker Compose配置文件，已解决权限问题
-- ✅ **数据持久化**: Docker卷持久化存储
-- ✅ **健康检查**: 内置健康检查和监控
-- ✅ **权限管理**: 已配置Docker socket访问权限
-- ✅ **文档**: 完整的使用和开发文档
+<div align="center">
 
-**当前版本**: v1.0.0  
-**Docker镜像**: `ghcr.io/cflmflj/docker-transformer:latest`  
-**开发状态**: 生产就绪
+**🎉 感谢使用Docker镜像转换服务！**
 
-## 📦 镜像信息
+Made with ❤️ by [cflmflj](https://github.com/cflmflj)
 
-- **仓库地址**: [GitHub Container Registry](https://ghcr.io/cflmflj/docker-transformer)
-- **支持架构**: linux/amd64, linux/arm64
-- **镜像大小**: ~50MB (基于Alpine Linux)
-- **更新频率**: 跟随主分支自动构建 
+[![GitHub stars](https://img.shields.io/github/stars/cflmflj/docker-transformer?style=social)](https://github.com/cflmflj/docker-transformer/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/cflmflj/docker-transformer?style=social)](https://github.com/cflmflj/docker-transformer/network/members)
+
+</div> 

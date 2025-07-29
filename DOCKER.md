@@ -72,7 +72,7 @@ version: '3.8'
 
 services:
   docker-transformer:
-    image: ghcr.io/your-username/docker-transformer:latest
+    image: ghcr.io/cflmflj/docker-transformer:latest
     ports:
       - "8080:8080"
     volumes:
@@ -109,7 +109,7 @@ spec:
     spec:
       containers:
       - name: docker-transformer
-        image: ghcr.io/your-username/docker-transformer:latest
+        image: ghcr.io/cflmflj/docker-transformer:latest
         ports:
         - containerPort: 8080
         env:
