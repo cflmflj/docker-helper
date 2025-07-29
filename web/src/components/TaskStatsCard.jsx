@@ -93,7 +93,7 @@ const TaskStatsCard = ({ stats, onViewDetails }) => {
           {/* 状态分布 */}
           <div style={{ marginTop: 16, marginBottom: 16 }}>
             <Row gutter={[8, 8]}>
-              <Col span={8}>
+              <Col span={6}>
                 <div style={{ textAlign: 'center', padding: '8px 0' }}>
                   <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>
                     {running}
@@ -104,7 +104,7 @@ const TaskStatsCard = ({ stats, onViewDetails }) => {
                   </div>
                 </div>
               </Col>
-              <Col span={8}>
+              <Col span={6}>
                 <div style={{ textAlign: 'center', padding: '8px 0' }}>
                   <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#faad14' }}>
                     {queued}
@@ -115,7 +115,18 @@ const TaskStatsCard = ({ stats, onViewDetails }) => {
                   </div>
                 </div>
               </Col>
-              <Col span={8}>
+              <Col span={6}>
+                <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>
+                    {success}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666' }}>
+                    <CheckCircleOutlined style={{ marginRight: 2 }} />
+                    成功
+                  </div>
+                </div>
+              </Col>
+              <Col span={6}>
                 <div style={{ textAlign: 'center', padding: '8px 0' }}>
                   <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4d4f' }}>
                     {failed}
