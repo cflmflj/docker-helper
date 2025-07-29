@@ -300,6 +300,7 @@ func main() {
 			// 历史记录相关
 			authenticated.GET("/history", historyHandler.GetHistory)
 			authenticated.GET("/history/stats", historyHandler.GetHistoryStats)
+			authenticated.GET("/history/detailed-stats", historyHandler.GetDetailedStats)
 			authenticated.DELETE("/history", historyHandler.ClearHistory)
 
 			// 仓库配置管理相关

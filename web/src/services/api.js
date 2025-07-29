@@ -79,6 +79,12 @@ export const createTransformTask = async (taskData) => {
   return api.post('/transform/start', taskData);
 };
 
+// 获取详细统计信息
+// GET /api/history/detailed-stats
+export const getDetailedStats = () => {
+  return api.get('/history/detailed-stats');
+};
+
 // 向后兼容的接口别名
 export const getTaskProgress = getTaskStatus; // 别名，保持兼容性
 

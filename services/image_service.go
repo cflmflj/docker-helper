@@ -30,6 +30,11 @@ func NewImageService() (*ImageService, error) {
 
 // TransformImage 转换镜像：拉取 -> 标记 -> 推送 -> 清理
 func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetImage, username, password string) (string, int, error) {
+	return is.TransformImageWithProgress(ctx, sourceImage, targetImage, username, password, nil)
+}
+
+// TransformImageWithProgress 转换镜像并支持进度回调
+func (is *ImageService) TransformImageWithProgress(ctx context.Context, sourceImage, targetImage, username, password string, progressCallback func(step int, stepName string, progress int)) (string, int, error) {
 	startTime := time.Now()
 	is.logger.Infof("开始镜像转换操作: %s -> %s", sourceImage, targetImage)
 
@@ -48,6 +53,9 @@ func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetI
 	is.logger.Infof("步骤3: 使用目标镜像名称: %s", targetImage)
 
 	// 4. 拉取源镜像
+	if progressCallback != nil {
+		progressCallback(4, "拉取源镜像", 60)
+	}
 	is.logger.Infof("步骤4: 开始拉取源镜像: %s", normalizedSource)
 	pullStartTime := time.Now()
 	if err := is.dockerService.PullImage(ctx, normalizedSource); err != nil {
@@ -58,6 +66,9 @@ func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetI
 	is.logger.Infof("步骤4: 拉取镜像完成，耗时: %v", pullDuration)
 
 	// 5. 标记镜像
+	if progressCallback != nil {
+		progressCallback(5, "标记镜像", 70)
+	}
 	is.logger.Infof("步骤5: 开始标记镜像: %s -> %s", normalizedSource, targetImage)
 	tagStartTime := time.Now()
 	if err := is.dockerService.TagImage(ctx, normalizedSource, targetImage); err != nil {
@@ -68,6 +79,9 @@ func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetI
 	is.logger.Infof("步骤5: 标记镜像完成，耗时: %v", tagDuration)
 
 	// 6. 推送镜像
+	if progressCallback != nil {
+		progressCallback(6, "推送镜像", 95)
+	}
 	is.logger.Infof("步骤6: 开始推送镜像到目标仓库: %s (用户: %s)", targetImage, username)
 	pushStartTime := time.Now()
 	if err := is.dockerService.PushImage(ctx, targetImage, username, password); err != nil {
@@ -81,6 +95,9 @@ func (is *ImageService) TransformImage(ctx context.Context, sourceImage, targetI
 	is.logger.Infof("步骤6: 推送镜像完成，耗时: %v", pushDuration)
 
 	// 7. 清理本地镜像（可选）
+	if progressCallback != nil {
+		progressCallback(7, "清理资源", 100)
+	}
 	is.logger.Infof("步骤7: 开始清理本地镜像")
 	cleanupStartTime := time.Now()
 	if err := is.dockerService.RemoveImage(ctx, normalizedSource); err != nil {

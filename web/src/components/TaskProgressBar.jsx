@@ -27,21 +27,27 @@ const TaskProgressBar = ({ progress }) => {
     );
   }
 
-  const { step = 1, step_name = "", message = "", progress: progressValue = 0 } = progress;
+  // 支持两种数据格式：
+  // 1. 后端Task对象格式: { current_step, step_message, progress }
+  // 2. 旧格式: { step, step_name, message, progress }
+  const currentStep = progress.current_step || progress.step || 1;
+  const stepName = progress.step_message || progress.step_name || "";
+  const message = progress.step_message || progress.message || "";
+  const progressValue = progress.progress || 0;
 
   // 生成步骤状态
   const getStepStatus = (stepIndex) => {
     const stepNumber = stepIndex + 1;
-    if (stepNumber < step) return 'finish';
-    if (stepNumber === step) return 'process';
+    if (stepNumber < currentStep) return 'finish';
+    if (stepNumber === currentStep) return 'process';
     return 'wait';
   };
 
   // 生成步骤图标
   const getStepIcon = (stepIndex) => {
     const stepNumber = stepIndex + 1;
-    if (stepNumber < step) return <CheckCircleOutlined />;
-    if (stepNumber === step) return <LoadingOutlined spin />;
+    if (stepNumber < currentStep) return <CheckCircleOutlined />;
+    if (stepNumber === currentStep) return <LoadingOutlined spin />;
     return <ClockCircleOutlined />;
   };
 
@@ -51,7 +57,7 @@ const TaskProgressBar = ({ progress }) => {
       <div style={{ marginBottom: 24 }}>
         <div style={{ marginBottom: 8 }}>
           <Space>
-            <Text strong>步骤 {step}/7: {step_name}</Text>
+            <Text strong>步骤 {currentStep}/7: {stepName}</Text>
             <Text type="secondary">{progressValue}%</Text>
           </Space>
         </div>
@@ -77,12 +83,12 @@ const TaskProgressBar = ({ progress }) => {
       <Steps
         direction="vertical"
         size="small"
-        current={step - 1}
+        current={currentStep - 1}
         items={TRANSFORM_STEPS.map((stepItem, index) => ({
           title: stepItem.name,
           status: getStepStatus(index),
           icon: getStepIcon(index),
-          description: index === step - 1 ? message : undefined
+          description: undefined // 移除描述，避免重复显示步骤名称
         }))}
       />
     </div>

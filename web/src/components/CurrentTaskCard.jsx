@@ -25,13 +25,13 @@ const CurrentTaskCard = ({ task, onCancel, onPause, onViewDetails }) => {
   };
 
   // 预估剩余时间
-  const estimateRemainingTime = (progress) => {
-    if (!progress || !task.start_time) return '';
-    const { progress: progressValue = 0 } = progress;
-    if (progressValue <= 0) return '';
+  const estimateRemainingTime = (task) => {
+    if (!task || !task.started_at) return '';
+    const { progress = 0 } = task;
+    if (progress <= 0) return '';
     
-    const elapsed = new Date() - new Date(task.start_time);
-    const estimatedTotal = (elapsed / progressValue) * 100;
+    const elapsed = new Date() - new Date(task.started_at);
+    const estimatedTotal = (elapsed / progress) * 100;
     const remaining = estimatedTotal - elapsed;
     
     if (remaining <= 0) return '即将完成';
@@ -54,6 +54,8 @@ const CurrentTaskCard = ({ task, onCancel, onPause, onViewDetails }) => {
       size="small"
       extra={
         <Space>
+          {/* 详情按钮暂时注释掉 - 点击没有反应 */}
+          {/*
           <Button
             size="small"
             icon={<InfoCircleOutlined />}
@@ -61,6 +63,7 @@ const CurrentTaskCard = ({ task, onCancel, onPause, onViewDetails }) => {
           >
             详情
           </Button>
+          */}
           <Button
             size="small"
             icon={<PauseOutlined />}
@@ -101,14 +104,14 @@ const CurrentTaskCard = ({ task, onCancel, onPause, onViewDetails }) => {
           </div>
           <div>
             <Space split=" | ">
-              {task.start_time && (
+              {task.started_at && (
                 <Text type="secondary" style={{ fontSize: '11px' }}>
-                  已执行: {formatDuration(task.start_time)}
+                  已执行: {formatDuration(task.started_at)}
                 </Text>
               )}
               {task.progress && (
                 <Text type="secondary" style={{ fontSize: '11px' }}>
-                  预计剩余: {estimateRemainingTime(task.progress)}
+                  预计剩余: {estimateRemainingTime(task)}
                 </Text>
               )}
             </Space>
@@ -116,7 +119,7 @@ const CurrentTaskCard = ({ task, onCancel, onPause, onViewDetails }) => {
         </div>
 
         {/* 进度条 */}
-        <TaskProgressBar progress={task.progress} />
+        <TaskProgressBar progress={task} />
       </div>
     </Card>
   );

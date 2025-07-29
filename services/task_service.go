@@ -254,13 +254,13 @@ func (ts *TaskService) executeTaskAsync(taskID, sourceImage, targetImage, userna
 		ts.mu.Unlock()
 	}()
 
-	// 更新任务状态为运行中
+	// 更新任务状态为运行中 - 步骤1: 验证镜像
 	ts.updateTaskProgress(taskID, &models.TaskProgressUpdate{
 		TaskID:      taskID,
 		Status:      models.TaskStatusRunning,
 		Progress:    5,
-		CurrentStep: models.TaskStepPull,
-		StepMessage: models.TaskStepMessages[models.TaskStepPull],
+		CurrentStep: 1,
+		StepMessage: "验证镜像",
 	})
 
 	// 更新开始时间
@@ -268,9 +268,38 @@ func (ts *TaskService) executeTaskAsync(taskID, sourceImage, targetImage, userna
 
 	startTime := time.Now()
 
-	// 执行镜像转换
-	resultImage, _, err := ts.imageService.TransformImage(
-		ctx, sourceImage, targetImage, username, password,
+	// 步骤2: 标准化处理
+	ts.updateTaskProgress(taskID, &models.TaskProgressUpdate{
+		TaskID:      taskID,
+		Status:      models.TaskStatusRunning,
+		Progress:    10,
+		CurrentStep: 2,
+		StepMessage: "标准化处理",
+	})
+
+	// 步骤3: 准备转换
+	ts.updateTaskProgress(taskID, &models.TaskProgressUpdate{
+		TaskID:      taskID,
+		Status:      models.TaskStatusRunning,
+		Progress:    15,
+		CurrentStep: 3,
+		StepMessage: "准备转换",
+	})
+
+	// 创建进度更新回调函数
+	progressCallback := func(step int, stepName string, progress int) {
+		ts.updateTaskProgress(taskID, &models.TaskProgressUpdate{
+			TaskID:      taskID,
+			Status:      models.TaskStatusRunning,
+			Progress:    progress,
+			CurrentStep: step,
+			StepMessage: stepName,
+		})
+	}
+
+	// 执行镜像转换（带进度回调）
+	resultImage, _, err := ts.imageService.TransformImageWithProgress(
+		ctx, sourceImage, targetImage, username, password, progressCallback,
 	)
 
 	// 计算实际执行时间
@@ -283,7 +312,7 @@ func (ts *TaskService) executeTaskAsync(taskID, sourceImage, targetImage, userna
 			TaskID:      taskID,
 			Status:      models.TaskStatusFailed,
 			Progress:    0,
-			CurrentStep: models.TaskStepInit,
+			CurrentStep: 1,
 			StepMessage: "转换失败",
 			ErrorMsg:    &errorMsg,
 			Duration:    actualDuration,
@@ -298,8 +327,8 @@ func (ts *TaskService) executeTaskAsync(taskID, sourceImage, targetImage, userna
 			TaskID:      taskID,
 			Status:      models.TaskStatusCompleted,
 			Progress:    100,
-			CurrentStep: models.TaskStepComplete,
-			StepMessage: models.TaskStepMessages[models.TaskStepComplete],
+			CurrentStep: 7,
+			StepMessage: "转换完成",
 			Duration:    actualDuration,
 		})
 
