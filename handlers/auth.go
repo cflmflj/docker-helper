@@ -78,7 +78,6 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 // ChangeToken 修改Token
 func (h *AuthHandler) ChangeToken(c *gin.Context) {
 	var req struct {
-		OldToken string `json:"old_token" binding:"required"`
 		NewToken string `json:"new_token" binding:"required"`
 	}
 
@@ -90,7 +89,33 @@ func (h *AuthHandler) ChangeToken(c *gin.Context) {
 		return
 	}
 
-	// 验证旧Token
+	// 从Authorization header获取当前token作为旧token
+	authHeader := c.GetHeader("Authorization")
+	var oldToken string
+
+	if authHeader != "" {
+		// 检查是否是Bearer格式
+		if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+			oldToken = authHeader[7:] // 提取Bearer后面的token
+		} else {
+			oldToken = authHeader // 向后兼容，直接使用原始值
+		}
+	}
+
+	// 如果Header中没有token，尝试从Cookie获取
+	if oldToken == "" {
+		oldToken, _ = c.Cookie("auth_token")
+	}
+
+	if oldToken == "" {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			Success: false,
+			Message: "未找到当前Token",
+		})
+		return
+	}
+
+	// 验证旧Token（这一步其实AuthMiddleware已经做过了，但为了安全再次验证）
 	var storedToken string
 	query := "SELECT value FROM config WHERE key = 'token'"
 	err := database.DB.QueryRow(query).Scan(&storedToken)
@@ -102,7 +127,7 @@ func (h *AuthHandler) ChangeToken(c *gin.Context) {
 		return
 	}
 
-	if req.OldToken != storedToken {
+	if oldToken != storedToken {
 		c.JSON(http.StatusUnauthorized, models.Response{
 			Success: false,
 			Message: "当前Token验证失败",

@@ -15,6 +15,15 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
+    } else {
+      // 如果未认证，确保清理任何可能残留的无效token
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('检测到未认证状态但存在token，清理中...');
+        localStorage.removeItem('token');
+        // 清理可能存在的认证cookie
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      }
     }
   }, [isAuthenticated, navigate]);
 

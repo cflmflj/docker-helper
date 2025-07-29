@@ -31,9 +31,22 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token过期或无效，清除本地存储并跳转到登录页
+      // Token过期或无效，清除本地存储
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      
+      // 检查当前是否已经在登录页，避免无限重定向
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/') {
+        // 只有当前不在登录页时才跳转
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100); // 添加小延迟避免状态冲突
+      }
+      
+      // 派发一个自定义事件，让AuthContext知道需要更新状态
+      window.dispatchEvent(new CustomEvent('auth-logout', { 
+        detail: { reason: 'token-invalid' } 
+      }));
     }
     return Promise.reject(error);
   }
