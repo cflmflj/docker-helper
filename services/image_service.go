@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"docker-transformer/utils"
+	"docker-helper/utils"
 )
 
 type ImageService struct {

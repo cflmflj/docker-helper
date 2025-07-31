@@ -3,14 +3,14 @@ package services
 import (
 	"context"
 	"database/sql"
+	"docker-helper/utils"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
 
-	"docker-transformer/database"
-	"docker-transformer/models"
-	"docker-transformer/utils"
+	"docker-helper/database"
+	"docker-helper/models"
 
 	"github.com/google/uuid"
 )

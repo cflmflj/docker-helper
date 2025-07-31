@@ -30,7 +30,7 @@
 #### 1. 克隆项目
 ```bash
 git clone <repository-url>
-cd docker-transformer
+cd docker-helper
 ```
 
 #### 2. 配置环境变量（可选）
@@ -64,8 +64,8 @@ docker-compose ps
 
 #### 1. 创建工作目录
 ```bash
-mkdir -p /opt/docker-transformer
-cd /opt/docker-transformer
+mkdir -p /opt/docker-helper
+cd /opt/docker-helper
 ```
 
 #### 2. 下载项目文件
@@ -75,7 +75,7 @@ git clone <repository-url> .
 
 # 或者下载压缩包
 wget <release-url>
-unzip docker-transformer.zip
+unzip docker-helper.zip
 ```
 
 #### 3. 配置环境
@@ -114,18 +114,18 @@ docker-compose logs -f
 export DEFAULT_TOKEN=$(openssl rand -base64 32)
 
 # 创建专用用户
-useradd -r -m -s /bin/bash docker-transformer
-usermod -aG docker docker-transformer
+useradd -r -m -s /bin/bash docker-helper
+usermod -aG docker docker-helper
 
 # 设置目录权限
-chown -R docker-transformer:docker-transformer /opt/docker-transformer
+chown -R docker-helper:docker-helper /opt/docker-helper
 ```
 
 #### 2. 系统服务配置
 创建systemd服务文件：
 
 ```bash
-cat > /etc/systemd/system/docker-transformer.service << EOF
+cat > /etc/systemd/system/docker-helper.service << EOF
 [Unit]
 Description=Docker Transformer Service
 Requires=docker.service
@@ -134,18 +134,18 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/docker-transformer
+WorkingDirectory=/opt/docker-helper
 ExecStart=/usr/local/bin/docker-compose up -d
 ExecStop=/usr/local/bin/docker-compose down
-User=docker-transformer
+User=docker-helper
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
 # 启用服务
-systemctl enable docker-transformer
-systemctl start docker-transformer
+systemctl enable docker-helper
+systemctl start docker-helper
 ```
 
 #### 3. 反向转发配置（Nginx）
@@ -154,7 +154,7 @@ systemctl start docker-transformer
 apt update && apt install nginx -y
 
 # 创建配置文件
-cat > /etc/nginx/sites-available/docker-transformer << EOF
+cat > /etc/nginx/sites-available/docker-helper << EOF
 server {
     listen 80;
     server_name your-domain.com;
@@ -175,7 +175,7 @@ server {
 EOF
 
 # 启用站点
-ln -s /etc/nginx/sites-available/docker-transformer /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/docker-helper /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
@@ -201,14 +201,14 @@ certbot renew --dry-run
 | `GIN_MODE` | release | Gin框架模式 (debug/release) |
 | `LOG_LEVEL` | info | 日志级别 (debug/info/warn/error) |
 | `DB_PATH` | /app/data/transform.db | SQLite数据库路径 |
-| `DEFAULT_TOKEN` | docker-transformer | 默认访问Token |
+| `DEFAULT_TOKEN` | docker-helper | 默认访问Token |
 
 ### Docker Compose配置
 
 #### 基础配置
 ```yaml
 services:
-  docker-transformer:
+  docker-helper:
     build: .
     ports:
       - "8080:8080"
@@ -223,7 +223,7 @@ services:
 #### 高级配置
 ```yaml
 services:
-  docker-transformer:
+  docker-helper:
     build: .
     ports:
       - "8080:8080"
@@ -259,7 +259,7 @@ curl http://localhost:8080/health
 
 # 详细状态检查
 docker-compose ps
-docker stats docker-transformer
+docker stats docker-helper
 ```
 
 ### 日志管理
@@ -271,7 +271,7 @@ docker-compose logs -f
 docker-compose logs --tail=100
 
 # 日志轮转配置
-cat > /etc/logrotate.d/docker-transformer << EOF
+cat > /etc/logrotate.d/docker-helper << EOF
 /var/lib/docker/containers/*/*-json.log {
     daily
     rotate 30
@@ -280,7 +280,7 @@ cat > /etc/logrotate.d/docker-transformer << EOF
     notifempty
     create 0644 root root
     postrotate
-        docker kill --signal=USR1 docker-transformer
+        docker kill --signal=USR1 docker-helper
     endscript
 }
 EOF
@@ -291,15 +291,15 @@ EOF
 #!/bin/bash
 # backup.sh - 数据备份脚本
 
-BACKUP_DIR="/backup/docker-transformer"
+BACKUP_DIR="/backup/docker-helper"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # 创建备份目录
 mkdir -p $BACKUP_DIR
 
 # 备份数据库
-docker exec docker-transformer sqlite3 /app/data/transform.db ".backup /app/data/backup_$DATE.db"
-docker cp docker-transformer:/app/data/backup_$DATE.db $BACKUP_DIR/
+docker exec docker-helper sqlite3 /app/data/transform.db ".backup /app/data/backup_$DATE.db"
+docker cp docker-helper:/app/data/backup_$DATE.db $BACKUP_DIR/
 
 # 备份配置文件
 tar -czf $BACKUP_DIR/config_$DATE.tar.gz .env docker-compose.yml
@@ -346,13 +346,13 @@ iptables -A INPUT -p tcp --dport 8080 -j DROP
 ### 2. Docker安全
 ```bash
 # 创建专用网络
-docker network create --driver bridge docker-transformer-net
+docker network create --driver bridge docker-helper-net
 
 # 使用非root用户
 echo 'USER 1001:1001' >> Dockerfile
 
 # 只读文件系统
-docker run --read-only --tmpfs /tmp docker-transformer
+docker run --read-only --tmpfs /tmp docker-helper
 ```
 
 ### 3. 访问控制
@@ -361,7 +361,7 @@ docker run --read-only --tmpfs /tmp docker-transformer
 export DEFAULT_TOKEN=$(openssl rand -base64 32)
 
 # IP白名单（Nginx）
-cat >> /etc/nginx/sites-available/docker-transformer << EOF
+cat >> /etc/nginx/sites-available/docker-helper << EOF
 location / {
     allow 192.168.1.0/24;
     allow 10.0.0.0/8;
@@ -377,7 +377,7 @@ EOF
 ### 1. 常规更新
 ```bash
 # 拉取最新代码
-cd /opt/docker-transformer
+cd /opt/docker-helper
 git pull origin main
 
 # 重新构建和启动
@@ -394,11 +394,11 @@ curl http://localhost:8080/health
 ./backup.sh
 
 # 下载新版本
-wget https://github.com/your-repo/docker-transformer/releases/download/v2.0.0/docker-transformer-v2.0.0.tar.gz
+wget https://github.com/your-repo/docker-helper/releases/download/v2.0.0/docker-helper-v2.0.0.tar.gz
 
 # 解压和更新
-tar -xzf docker-transformer-v2.0.0.tar.gz
-cp -r docker-transformer-v2.0.0/* .
+tar -xzf docker-helper-v2.0.0.tar.gz
+cp -r docker-helper-v2.0.0/* .
 
 # 升级服务
 docker-compose down
@@ -413,7 +413,7 @@ git checkout HEAD~1
 docker-compose up --build -d
 
 # 恢复数据库备份
-docker cp backup.db docker-transformer:/app/data/transform.db
+docker cp backup.db docker-helper:/app/data/transform.db
 docker-compose restart
 ```
 
@@ -424,7 +424,7 @@ docker-compose restart
 #### 1. 容器启动失败
 ```bash
 # 检查日志
-docker-compose logs docker-transformer
+docker-compose logs docker-helper
 
 # 检查权限
 ls -la /var/run/docker.sock
@@ -437,10 +437,10 @@ netstat -tlnp | grep 8080
 #### 2. 镜像拉取失败
 ```bash
 # 检查网络连接
-docker exec docker-transformer ping docker.io
+docker exec docker-helper ping docker.io
 
 # 检查DNS解析
-docker exec docker-transformer nslookup docker.io
+docker exec docker-helper nslookup docker.io
 
 # 配置网络转发（如需要）
 export HTTP_PROXY=http://proxy.company.com:8080
@@ -453,7 +453,7 @@ export HTTPS_PROXY=http://proxy.company.com:8080
 ls -la data/transform.db
 
 # 数据库完整性检查
-docker exec docker-transformer sqlite3 /app/data/transform.db "PRAGMA integrity_check;"
+docker exec docker-helper sqlite3 /app/data/transform.db "PRAGMA integrity_check;"
 
 # 重建数据库
 mv data/transform.db data/transform.db.backup

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"docker-transformer/database"
-	"docker-transformer/models"
-	"docker-transformer/services"
-	"docker-transformer/utils"
+	"docker-helper/database"
+	"docker-helper/models"
+	"docker-helper/services"
+	"docker-helper/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

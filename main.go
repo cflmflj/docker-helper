@@ -12,11 +12,11 @@ import (
 	"strings"
 	"syscall"
 
-	"docker-transformer/config"
-	"docker-transformer/database"
-	"docker-transformer/handlers"
-	"docker-transformer/middlewares"
-	"docker-transformer/utils"
+	"docker-helper/config"
+	"docker-helper/database"
+	"docker-helper/handlers"
+	"docker-helper/middlewares"
+	"docker-helper/utils"
 
 	"github.com/gin-gonic/gin"
 )

@@ -4,7 +4,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)](https://reactjs.org/)
 [![Docker](https://img.shields.io/badge/Docker-20.10+-2496ED?logo=docker)](https://www.docker.com/)
-[![GitHub release](https://img.shields.io/github/v/release/cflmflj/docker-transformer)](https://github.com/cflmflj/docker-transformer/releases)
+[![GitHub release](https://img.shields.io/github/v/release/cflmflj/docker-helper)](https://github.com/cflmflj/docker-helper/releases)
 
 一个功能完整、易于使用的Docker镜像跨仓库转换服务，专为解决网络受限环境下的镜像获取问题而设计。
 
@@ -51,7 +51,7 @@
 
 ```bash
 # 下载并运行一键部署脚本
-curl -fsSL https://raw.githubusercontent.com/cflmflj/docker-transformer/main/deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cflmflj/docker-helper/main/deploy.sh | bash
 
 # 或者使用自定义配置
 ./deploy.sh -t your-custom-token -p 9090
@@ -61,7 +61,7 @@ curl -fsSL https://raw.githubusercontent.com/cflmflj/docker-transformer/main/dep
 
 ```bash
 # 下载配置文件
-wget https://raw.githubusercontent.com/cflmflj/docker-transformer/main/docker-compose.yml
+wget https://raw.githubusercontent.com/cflmflj/docker-helper/main/docker-compose.yml
 
 # 启动服务
 docker-compose up -d
@@ -74,16 +74,16 @@ open http://localhost:8080
 
 ```bash
 docker run -d \
-  --name docker-transformer \
+  --name docker-helper \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v transformer_data:/app/data \
-  ghcr.io/cflmflj/docker-transformer:latest
+  ghcr.io/cflmflj/docker-helper:latest
 ```
 
 ### 默认登录信息
 - **访问地址**: http://localhost:8080
-- **默认Token**: `docker-transformer`
+- **默认Token**: `docker-helper`
 
 > ⚠️ **安全提醒**: 首次登录后请立即修改默认Token
 
@@ -108,7 +108,7 @@ docker run -d \
 ## 📁 项目结构
 
 ```
-docker-transformer/
+docker-helper/
 ├── 📄 main.go                    # 主程序入口
 ├── 📁 config/                    # 配置管理
 ├── 📁 database/                  # 数据库相关
@@ -147,7 +147,7 @@ docker-transformer/
 1. **登录系统**
    ```
    访问: http://localhost:8080
-   Token: docker-transformer
+   Token: docker-helper
    ```
 
 2. **配置转换任务**
@@ -189,7 +189,7 @@ quay.io/prometheus/prometheus:v2.40.0
 | `GIN_MODE` | `release` | Gin运行模式（debug/release） |
 | `LOG_LEVEL` | `info` | 日志级别（debug/info/warn/error） |
 | `DB_PATH` | `/app/data/transform.db` | SQLite数据库文件路径 |
-| `DEFAULT_TOKEN` | `docker-transformer` | 默认认证Token |
+| `DEFAULT_TOKEN` | `docker-helper` | 默认认证Token |
 
 ### 数据持久化
 
@@ -222,7 +222,7 @@ quay.io/prometheus/prometheus:v2.40.0
    docker-compose ps
    
    # 查看启动日志
-   docker-compose logs docker-transformer
+   docker-compose logs docker-helper
    ```
 
 2. **Docker socket权限问题**
@@ -253,8 +253,8 @@ quay.io/prometheus/prometheus:v2.40.0
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/cflmflj/docker-transformer.git
-cd docker-transformer
+git clone https://github.com/cflmflj/docker-helper.git
+cd docker-helper
 
 # 2. 安装Go依赖
 go mod download
@@ -285,10 +285,10 @@ npm run build
 
 # 2. 构建后端（包含前端资源）
 cd ..
-go build -o docker-transformer
+go build -o docker-helper
 
 # 3. 构建Docker镜像
-docker build -t docker-transformer:local .
+docker build -t docker-helper:local .
 ```
 
 ### 贡献指南
@@ -316,8 +316,8 @@ docker build -t docker-transformer:local .
 
 ### 获取帮助
 - **📖 在线文档**: 查阅完整的使用文档
-- **🐛 Bug报告**: [GitHub Issues](https://github.com/cflmflj/docker-transformer/issues)
-- **💡 功能建议**: [GitHub Discussions](https://github.com/cflmflj/docker-transformer/discussions)
+- **🐛 Bug报告**: [GitHub Issues](https://github.com/cflmflj/docker-helper/issues)
+- **💡 功能建议**: [GitHub Discussions](https://github.com/cflmflj/docker-helper/discussions)
 
 ### 社区
 - **⭐ Star项目**: 如果这个项目对您有帮助，请给个Star
@@ -332,7 +332,7 @@ docker build -t docker-transformer:local .
 
 Made with ❤️ by [cflmflj](https://github.com/cflmflj)
 
-[![GitHub stars](https://img.shields.io/github/stars/cflmflj/docker-transformer?style=social)](https://github.com/cflmflj/docker-transformer/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/cflmflj/docker-transformer?style=social)](https://github.com/cflmflj/docker-transformer/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/cflmflj/docker-helper?style=social)](https://github.com/cflmflj/docker-helper/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/cflmflj/docker-helper?style=social)](https://github.com/cflmflj/docker-helper/network/members)
 
 </div> 

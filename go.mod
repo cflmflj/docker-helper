@@ -1,4 +1,4 @@
-module docker-transformer
+module docker-helper
 
 go 1.23.0
 

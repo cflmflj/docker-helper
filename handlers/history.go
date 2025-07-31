@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"docker-helper/utils"
 	"net/http"
 	"strconv"
 
-	"docker-transformer/database"
-	"docker-transformer/models"
-	"docker-transformer/utils"
+	"docker-helper/database"
+	"docker-helper/models"
 
 	"database/sql"
 

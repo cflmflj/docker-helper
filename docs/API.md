@@ -447,12 +447,12 @@ GET /health
 # 1. 登录
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"token": "docker-transformer"}'
+  -d '{"token": "docker-helper"}'
 
 # 2. 创建转换任务
 curl -X POST http://localhost:8080/api/transform/start \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer docker-transformer" \
+  -H "Authorization: Bearer docker-helper" \
   -d '{
     "source_image": "nginx:latest",
     "target_image": "harbor.example.com/library/nginx:latest"
@@ -460,11 +460,11 @@ curl -X POST http://localhost:8080/api/transform/start \
 
 # 3. 查询任务状态
 curl -X GET http://localhost:8080/api/tasks/task-uuid \
-  -H "Authorization: Bearer docker-transformer"
+  -H "Authorization: Bearer docker-helper"
 
 # 4. 查看历史记录
 curl -X GET http://localhost:8080/api/history?limit=10 \
-  -H "Authorization: Bearer docker-transformer"
+  -H "Authorization: Bearer docker-helper"
 ```
 
 ## 🔒 安全说明

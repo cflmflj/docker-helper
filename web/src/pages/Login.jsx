@@ -87,7 +87,7 @@ const Login = () => {
 
           <div className="login-footer">
             <Text type="secondary" className="login-hint">
-              默认Token: docker-transformer
+              默认Token: docker-helper
             </Text>
           </div>
         </Card>

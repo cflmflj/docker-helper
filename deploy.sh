@@ -63,7 +63,7 @@ download_config() {
     
     # 下载docker-compose.yml
     if [ ! -f "docker-compose.yml" ]; then
-        curl -s -o docker-compose.yml https://raw.githubusercontent.com/cflmflj/docker-transformer/main/docker-compose.yml
+        curl -s -o docker-compose.yml https://raw.githubusercontent.com/cflmflj/docker-helper/main/docker-compose.yml
         if [ $? -eq 0 ]; then
             log_success "docker-compose.yml 下载成功"
         else
@@ -101,7 +101,7 @@ configure_token() {
             log_success "自定义Token已设置: $custom_token"
         fi
     else
-        log_info "使用默认Token: docker-transformer"
+        log_info "使用默认Token: docker-helper"
     fi
 }
 
@@ -128,7 +128,7 @@ start_service() {
         echo "🎉 部署完成！"
         echo
         echo "📍 访问地址: http://localhost:8080"
-        echo "🔑 默认Token: $(grep DEFAULT_TOKEN .env 2>/dev/null | cut -d'=' -f2 || echo 'docker-transformer')"
+        echo "🔑 默认Token: $(grep DEFAULT_TOKEN .env 2>/dev/null | cut -d'=' -f2 || echo 'docker-helper')"
         echo
         echo "📊 查看服务状态: docker-compose ps"
         echo "📋 查看日志: docker-compose logs -f"

@@ -60,7 +60,7 @@
 
 ```bash
 # 下载配置文件
-wget https://raw.githubusercontent.com/cflmflj/docker-transformer/v1.0.0/docker-compose.yml
+wget https://raw.githubusercontent.com/cflmflj/docker-helper/v1.0.0/docker-compose.yml
 
 # 启动服务
 docker-compose up -d
@@ -73,15 +73,15 @@ http://localhost:8080
 
 ```bash
 docker run -d \
-  --name docker-transformer \
+  --name docker-helper \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v transformer_data:/app/data \
-  ghcr.io/cflmflj/docker-transformer:v1.0.0
+  ghcr.io/cflmflj/docker-helper:v1.0.0
 ```
 
 ### 默认登录信息
-- **Token**: `docker-transformer`
+- **Token**: `docker-helper`
 
 ## 📋 系统要求
 
@@ -108,7 +108,7 @@ docker run -d \
 | `GIN_MODE` | `release` | Gin运行模式 |
 | `LOG_LEVEL` | `info` | 日志级别 |
 | `DB_PATH` | `/app/data/transform.db` | 数据库文件路径 |
-| `DEFAULT_TOKEN` | `docker-transformer` | 默认认证Token |
+| `DEFAULT_TOKEN` | `docker-helper` | 默认认证Token |
 
 ### 卷挂载
 
@@ -181,8 +181,8 @@ quay.io/prometheus/prometheus:latest     # Quay镜像
 
 ## 📞 支持与反馈
 
-- **Issues**: [GitHub Issues](https://github.com/cflmflj/docker-transformer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/cflmflj/docker-transformer/discussions)
+- **Issues**: [GitHub Issues](https://github.com/cflmflj/docker-helper/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/cflmflj/docker-helper/discussions)
 
 ---
 

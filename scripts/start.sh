@@ -60,7 +60,7 @@ print_message "🔍 检查服务状态..." $YELLOW
 if curl -f http://localhost:8080/health >/dev/null 2>&1; then
     print_message "✅ 服务启动成功！" $GREEN
     print_message "🌐 访问地址: http://localhost:8080" $GREEN
-    print_message "🔧 默认Token: docker-transformer" $YELLOW
+    print_message "🔧 默认Token: docker-helper" $YELLOW
 else
     print_message "❌ 服务启动失败，请检查日志" $RED
     print_message "查看日志命令: docker-compose logs -f" $YELLOW

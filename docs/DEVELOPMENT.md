@@ -43,8 +43,8 @@ vite@7                        # 构建工具
 
 ```bash
 # 克隆仓库
-git clone https://github.com/cflmflj/docker-transformer.git
-cd docker-transformer
+git clone https://github.com/cflmflj/docker-helper.git
+cd docker-helper
 
 # 查看项目结构
 tree -I 'node_modules|vendor|*.log'
@@ -155,16 +155,16 @@ npm run build
 
 # 回到根目录构建后端（包含前端资源）
 cd ..
-go build -o docker-transformer
+go build -o docker-helper
 
 # 运行完整应用
-./docker-transformer
+./docker-helper
 ```
 
 ## 📁 项目结构详解
 
 ```
-docker-transformer/
+docker-helper/
 ├── 📄 main.go                    # 主程序入口，路由配置
 ├── 📁 config/                    # 配置管理
 │   └── config.go                 # 应用配置结构
@@ -500,15 +500,15 @@ docker-compose logs -f
 ### 生产环境部署
 ```bash
 # 构建生产镜像
-docker build -t docker-transformer:latest .
+docker build -t docker-helper:latest .
 
 # 运行生产容器
 docker run -d \
-  --name docker-transformer \
+  --name docker-helper \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v transformer_data:/app/data \
-  docker-transformer:latest
+  docker-helper:latest
 ```
 
 ## 🤝 贡献指南
@@ -519,7 +519,7 @@ docker run -d \
    ```bash
    # 在GitHub上Fork项目
    # 克隆你的Fork
-   git clone https://github.com/YOUR_USERNAME/docker-transformer.git
+   git clone https://github.com/YOUR_USERNAME/docker-helper.git
    ```
 
 2. **创建功能分支**

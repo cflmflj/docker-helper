@@ -21,7 +21,7 @@ http://your-server:8080
 
 ### 首次登录
 
-1. 在登录页面输入默认Token：`docker-transformer`
+1. 在登录页面输入默认Token：`docker-helper`
 2. 点击"登录"按钮进入系统
 
 ![登录界面](docs/images/login.png)
@@ -31,7 +31,7 @@ http://your-server:8080
 ### Token认证
 
 系统使用Token认证机制：
-- **默认Token**: `docker-transformer`
+- **默认Token**: `docker-helper`
 - **Token修改**: 登录后可在用户菜单中修改
 - **安全建议**: 首次使用后立即修改默认Token
 

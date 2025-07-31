@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"docker-transformer/models"
-	"docker-transformer/services"
-	"docker-transformer/utils"
+	"docker-helper/models"
+	"docker-helper/services"
+	"docker-helper/utils"
 
 	"github.com/gin-gonic/gin"
 )

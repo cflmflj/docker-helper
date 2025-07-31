@@ -21,7 +21,7 @@ func NewCryptoService() *CryptoService {
 	// 从环境变量获取加密密钥，如果没有则使用默认密钥
 	secretKey := os.Getenv("ENCRYPTION_KEY")
 	if secretKey == "" {
-		secretKey = "docker-transformer-secret-key-2025"
+		secretKey = "docker-helper-secret-key-2025"
 	}
 
 	// 使用SHA256生成32字节密钥

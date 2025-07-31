@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
-	"docker-transformer/database"
-	"docker-transformer/models"
+	"docker-helper/database"
+	"docker-helper/models"
 
 	"github.com/gin-gonic/gin"
 )

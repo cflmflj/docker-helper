@@ -10,14 +10,14 @@
 
 ```bash
 # 构建镜像
-docker build -t docker-transformer:latest .
+docker build -t docker-helper:latest .
 
 # 运行容器
 docker run -d \
-  --name docker-transformer \
+  --name docker-helper \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  docker-transformer:latest
+  docker-helper:latest
 ```
 
 ### 访问应用
@@ -71,8 +71,8 @@ docker run -d \
 version: '3.8'
 
 services:
-  docker-transformer:
-    image: ghcr.io/cflmflj/docker-transformer:latest
+  docker-helper:
+    image: ghcr.io/cflmflj/docker-helper:latest
     ports:
       - "8080:8080"
     volumes:
@@ -96,20 +96,20 @@ services:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: docker-transformer
+  name: docker-helper
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: docker-transformer
+      app: docker-helper
   template:
     metadata:
       labels:
-        app: docker-transformer
+        app: docker-helper
     spec:
       containers:
-      - name: docker-transformer
-        image: ghcr.io/cflmflj/docker-transformer:latest
+      - name: docker-helper
+        image: ghcr.io/cflmflj/docker-helper:latest
         ports:
         - containerPort: 8080
         env:
@@ -137,15 +137,15 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: docker-transformer-data
+          claimName: docker-helper-data
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: docker-transformer-service
+  name: docker-helper-service
 spec:
   selector:
-    app: docker-transformer
+    app: docker-helper
   ports:
   - protocol: TCP
     port: 80
@@ -181,7 +181,7 @@ spec:
 
 1. 检查数据目录权限
 2. 确认端口是否被占用
-3. 查看容器日志: `docker logs docker-transformer`
+3. 查看容器日志: `docker logs docker-helper`
 
 ### GHCR推送失败
 

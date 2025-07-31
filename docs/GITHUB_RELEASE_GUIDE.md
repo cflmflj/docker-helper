@@ -80,7 +80,7 @@ git push origin v1.0.0
 #### 4.1 访问GitHub Releases页面
 
 ```
-https://github.com/cflmflj/docker-transformer/releases
+https://github.com/cflmflj/docker-helper/releases
 ```
 
 #### 4.2 点击"Create a new release"
@@ -142,7 +142,7 @@ v1.0.0
 
 ```bash
 # 下载配置文件
-wget https://raw.githubusercontent.com/cflmflj/docker-transformer/v1.0.0/docker-compose.yml
+wget https://raw.githubusercontent.com/cflmflj/docker-helper/v1.0.0/docker-compose.yml
 
 # 启动服务
 docker-compose up -d
@@ -155,11 +155,11 @@ http://localhost:8080
 
 ```bash
 docker run -d \
-  --name docker-transformer \
+  --name docker-helper \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v transformer_data:/app/data \
-  ghcr.io/cflmflj/docker-transformer:v1.0.0
+  ghcr.io/cflmflj/docker-helper:v1.0.0
 ```
 
 ### 🔧 技术规格
@@ -179,7 +179,7 @@ docker run -d \
 ### 🔐 默认登录信息
 
 - **访问地址**: http://localhost:8080
-- **默认Token**: `docker-transformer`
+- **默认Token**: `docker-helper`
 
 > ⚠️ **安全提醒**: 首次登录后请立即修改默认Token
 
@@ -204,26 +204,26 @@ docker run -d \
 
 ### 📞 支持与反馈
 
-- **Bug报告**: [GitHub Issues](https://github.com/cflmflj/docker-transformer/issues)
-- **功能建议**: [GitHub Discussions](https://github.com/cflmflj/docker-transformer/discussions)
-- **用户文档**: [完整文档](https://github.com/cflmflj/docker-transformer/blob/main/README.md)
+- **Bug报告**: [GitHub Issues](https://github.com/cflmflj/docker-helper/issues)
+- **功能建议**: [GitHub Discussions](https://github.com/cflmflj/docker-helper/discussions)
+- **用户文档**: [完整文档](https://github.com/cflmflj/docker-helper/blob/main/README.md)
 
 ---
 
 **完整发布说明**: [RELEASE_NOTES.md](./RELEASE_NOTES.md)
 
-**Docker镜像**: `ghcr.io/cflmflj/docker-transformer:v1.0.0`
+**Docker镜像**: `ghcr.io/cflmflj/docker-helper:v1.0.0`
 ```
 
 #### 4.4 附加文件（Assets）
 
 如果需要提供编译好的二进制文件，可以在这里上传：
 
-- `docker-transformer-linux-amd64` - Linux AMD64版本
-- `docker-transformer-linux-arm64` - Linux ARM64版本
-- `docker-transformer-windows-amd64.exe` - Windows版本
-- `docker-transformer-darwin-amd64` - macOS Intel版本
-- `docker-transformer-darwin-arm64` - macOS Apple Silicon版本
+- `docker-helper-linux-amd64` - Linux AMD64版本
+- `docker-helper-linux-arm64` - Linux ARM64版本
+- `docker-helper-windows-amd64.exe` - Windows版本
+- `docker-helper-darwin-amd64` - macOS Intel版本
+- `docker-helper-darwin-arm64` - macOS Apple Silicon版本
 
 #### 4.5 发布选项
 
@@ -293,8 +293,8 @@ docker buildx create --use --name multiarch
 # 构建并推送
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --tag ghcr.io/cflmflj/docker-transformer:v1.0.0 \
-  --tag ghcr.io/cflmflj/docker-transformer:latest \
+  --tag ghcr.io/cflmflj/docker-helper:v1.0.0 \
+  --tag ghcr.io/cflmflj/docker-helper:latest \
   --push .
 ```
 
@@ -304,14 +304,14 @@ docker buildx build \
 
 ```bash
 # 验证Docker镜像可用
-docker pull ghcr.io/cflmflj/docker-transformer:v1.0.0
+docker pull ghcr.io/cflmflj/docker-helper:v1.0.0
 
 # 验证服务正常启动
 docker run -d \
   --name test-transformer \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/cflmflj/docker-transformer:v1.0.0
+  ghcr.io/cflmflj/docker-helper:v1.0.0
 
 # 检查健康状态
 curl http://localhost:8080/health
@@ -327,7 +327,7 @@ docker rm test-transformer
 
 ```markdown
 # 示例：更新快速开始命令中的版本
-wget https://raw.githubusercontent.com/cflmflj/docker-transformer/v1.0.0/docker-compose.yml
+wget https://raw.githubusercontent.com/cflmflj/docker-helper/v1.0.0/docker-compose.yml
 ```
 
 ### 3. 社交媒体宣传

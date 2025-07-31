@@ -41,5 +41,5 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- 插入初始化数据
 INSERT OR REPLACE INTO config (key, value) VALUES 
-('token', 'docker-transformer'),
+('token', 'docker-helper'),
 ('app_version', '1.0.0'); 

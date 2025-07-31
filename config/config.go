@@ -18,7 +18,7 @@ func Load() *Config {
 		GinMode:      getEnv("GIN_MODE", "debug"),
 		LogLevel:     getEnv("LOG_LEVEL", "info"),
 		DBPath:       getEnv("DB_PATH", "./data/transform.db"),
-		DefaultToken: getEnv("DEFAULT_TOKEN", "docker-transformer"),
+		DefaultToken: getEnv("DEFAULT_TOKEN", "docker-helper"),
 	}
 }
 

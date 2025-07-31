@@ -19,7 +19,7 @@ print_message() {
 print_message "🛑 停止Docker镜像转换服务..." $BLUE
 
 # 停止服务
-if docker-compose ps | grep -q "docker-transformer"; then
+if docker-compose ps | grep -q "docker-helper"; then
     print_message "⏹️  停止服务容器..." $YELLOW
     docker-compose down
     print_message "✅ 服务已停止" $GREEN

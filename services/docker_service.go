@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"docker-transformer/utils"
+	"docker-helper/utils"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
